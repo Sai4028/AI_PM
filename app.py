@@ -36,6 +36,24 @@ embedding_model = SentenceTransformer(
 
 st.title("AI PM Assistant")
 
+# -----------------------------------
+# REPOSITORY FILES
+# -----------------------------------
+
+st.subheader("Repository Files")
+
+repository_files = os.listdir("repository")
+
+if repository_files:
+
+    for file in repository_files:
+
+        st.write(file)
+
+else:
+
+    st.warning("Repository is empty")
+
 st.subheader("Upload Additional Documents")
 
 uploaded_files = st.file_uploader(
