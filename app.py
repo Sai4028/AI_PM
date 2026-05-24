@@ -54,6 +54,10 @@ else:
 
     st.warning("Repository is empty")
 
+# -----------------------------------
+# FILE UPLOAD
+# -----------------------------------
+
 st.subheader("Upload Additional Documents")
 
 uploaded_files = st.file_uploader(
@@ -61,6 +65,10 @@ uploaded_files = st.file_uploader(
     type=["pdf"],
     accept_multiple_files=True
 )
+
+# -----------------------------------
+# REQUIREMENT INPUT
+# -----------------------------------
 
 st.subheader("Enter Requirement")
 
@@ -84,7 +92,7 @@ if analyze:
     else:
 
         # -----------------------------------
-        # SAVE UPLOADED FILES
+        # SAVE FILES
         # -----------------------------------
 
         if uploaded_files:
@@ -102,8 +110,12 @@ if analyze:
                         uploaded_file.getbuffer()
                     )
 
+                st.success(
+                    f"{uploaded_file.name} saved successfully"
+                )
+
         # -----------------------------------
-        # READ ALL REPOSITORY FILES
+        # READ REPOSITORY
         # -----------------------------------
 
         all_chunks = []
@@ -151,7 +163,9 @@ if analyze:
                     chunk_size
                 ):
 
-                    chunk = clean_text[i:i+chunk_size]
+                    chunk = clean_text[
+                        i:i+chunk_size
+                    ]
 
                     all_chunks.append({
                         "source": file,
@@ -176,7 +190,7 @@ if analyze:
         ).astype("float32")
 
         # -----------------------------------
-        # CREATE FAISS INDEX
+        # FAISS INDEX
         # -----------------------------------
 
         dimension = embeddings.shape[1]
@@ -218,6 +232,8 @@ if analyze:
             "Relevant Repository Matches"
         )
 
+        rank = 1
+
         for idx in indices[0]:
 
             match = all_chunks[idx]
@@ -225,7 +241,17 @@ if analyze:
             st.markdown("---")
 
             st.markdown(
-                f"### Source: {match['source']}"
+                f"## Match Rank: {rank}"
+            )
+
+            st.markdown(
+                f"### Source File: {match['source']}"
+            )
+
+            st.markdown(
+                "### Relevant Section"
             )
 
             st.write(match["text"])
+
+            rank += 1
