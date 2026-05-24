@@ -633,7 +633,8 @@ Below are production-ready code examples for core modules.
 # config/settings.py
 """Centralized configuration management using pydantic."""
 
-from pydantic import BaseSettings, Field
+from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional, List
 import os
 
