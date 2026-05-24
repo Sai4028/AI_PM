@@ -4,22 +4,11 @@ import os
 import re
 import faiss
 import numpy as np
-import google.generativeai as genai
+import requests
 
 from sentence_transformers import SentenceTransformer
 from docx import Document
 
-# -----------------------------------
-# GEMINI CONFIG
-# -----------------------------------
-
-genai.configure(
-    api_key=st.secrets["GEMINI_API_KEY"]
-)
-
-model = genai.GenerativeModel(
-    "models/gemini-1.5-pro"
-)
 # -----------------------------------
 # PAGE CONFIG
 # -----------------------------------
@@ -359,6 +348,12 @@ if analyze:
 
             final_context = ""
 
+            st.subheader(
+                "Relevant Repository Matches"
+            )
+
+            rank = 1
+
             for idx in indices[0]:
 
                 match = all_chunks[idx]
@@ -370,20 +365,6 @@ if analyze:
                 final_context += (
                     match["text"] + "\n\n"
                 )
-
-            # -----------------------------------
-            # DISPLAY RETRIEVAL RESULTS
-            # -----------------------------------
-
-            st.subheader(
-                "Relevant Repository Matches"
-            )
-
-            rank = 1
-
-            for idx in indices[0]:
-
-                match = all_chunks[idx]
 
                 st.markdown("---")
 
@@ -404,7 +385,7 @@ if analyze:
                 rank += 1
 
             # -----------------------------------
-            # AI REASONING
+            # AI PROMPT
             # -----------------------------------
 
             prompt = f"""
@@ -427,18 +408,58 @@ Analyze and provide:
 Provide structured output.
 """
 
-            response = model.generate_content(
-                prompt
-            )
-
-            ai_output = response.text
-
             # -----------------------------------
-            # DISPLAY AI ANALYSIS
+            # GEMINI API CALL
             # -----------------------------------
 
-            st.subheader(
-                "AI Analysis"
+            api_key = st.secrets["GEMINI_API_KEY"]
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload
             )
 
-            st.write(ai_output)
+            response_json = response.json()
+
+            # -----------------------------------
+            # SAFE RESPONSE HANDLING
+            # -----------------------------------
+
+            try:
+
+                ai_output = response_json[
+                    "candidates"
+                ][0]["content"]["parts"][0]["text"]
+
+                st.subheader(
+                    "AI Analysis"
+                )
+
+                st.write(ai_output)
+
+            except:
+
+                st.error(
+                    "AI response generation failed"
+                )
+
+                st.write(response_json)
