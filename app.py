@@ -4,9 +4,22 @@ import os
 import re
 import faiss
 import numpy as np
+import google.generativeai as genai
 
 from sentence_transformers import SentenceTransformer
 from docx import Document
+
+# -----------------------------------
+# GEMINI CONFIG
+# -----------------------------------
+
+genai.configure(
+    api_key=st.secrets["GEMINI_API_KEY"]
+)
+
+model = genai.GenerativeModel(
+    "gemini-1.5-flash"
+)
 
 # -----------------------------------
 # PAGE CONFIG
@@ -111,10 +124,6 @@ if analyze:
                         uploaded_file.getbuffer()
                     )
 
-                st.success(
-                    f"{uploaded_file.name} saved successfully"
-                )
-
         # -----------------------------------
         # FILTER FILES
         # -----------------------------------
@@ -131,15 +140,11 @@ if analyze:
 
             file_lower = file.lower()
 
-            # CUSTOMER
-
             if "customer" in requirement_lower:
 
                 if "customer" in file_lower:
 
                     filtered_files.append(file)
-
-            # SUPPLIER / VENDOR
 
             elif (
                 "supplier" in requirement_lower
@@ -155,23 +160,17 @@ if analyze:
 
                     filtered_files.append(file)
 
-            # INVENTORY
-
             elif "inventory" in requirement_lower:
 
                 if "inventory" in file_lower:
 
                     filtered_files.append(file)
 
-            # FINANCE
-
             elif "finance" in requirement_lower:
 
                 if "finance" in file_lower:
 
                     filtered_files.append(file)
-
-            # DEFAULT
 
             else:
 
@@ -212,9 +211,7 @@ if analyze:
 
                     text += para.text + " "
 
-            # -----------------------------------
-            # CLEAN TEXT
-            # -----------------------------------
+            # CLEAN
 
             clean_text = re.sub(
                 r'\s+',
@@ -222,9 +219,7 @@ if analyze:
                 text
             )
 
-            # -----------------------------------
             # CHUNKING
-            # -----------------------------------
 
             chunk_size = 400
 
@@ -247,7 +242,7 @@ if analyze:
                 })
 
         # -----------------------------------
-        # CHECK EMPTY CHUNKS
+        # CHECK EMPTY
         # -----------------------------------
 
         if not all_chunks:
@@ -259,7 +254,7 @@ if analyze:
         else:
 
             # -----------------------------------
-            # CREATE EMBEDDINGS
+            # EMBEDDINGS
             # -----------------------------------
 
             chunk_texts = [
@@ -279,7 +274,7 @@ if analyze:
             ).astype("float32")
 
             # -----------------------------------
-            # CREATE FAISS INDEX
+            # FAISS INDEX
             # -----------------------------------
 
             dimension = embeddings.shape[1]
@@ -314,7 +309,25 @@ if analyze:
             )
 
             # -----------------------------------
-            # DISPLAY RESULTS
+            # BUILD CONTEXT
+            # -----------------------------------
+
+            final_context = ""
+
+            for idx in indices[0]:
+
+                match = all_chunks[idx]
+
+                final_context += (
+                    f"Source: {match['source']}\n"
+                )
+
+                final_context += (
+                    match["text"] + "\n\n"
+                )
+
+            # -----------------------------------
+            # DISPLAY MATCHES
             # -----------------------------------
 
             st.subheader(
@@ -337,10 +350,46 @@ if analyze:
                     f"### Source File: {match['source']}"
                 )
 
-                st.markdown(
-                    "### Relevant Section"
-                )
-
                 st.write(match["text"])
 
                 rank += 1
+
+            # -----------------------------------
+            # AI REASONING
+            # -----------------------------------
+
+            prompt = f"""
+You are an ERP Product Management AI Assistant.
+
+Enterprise Context:
+{final_context}
+
+Requirement:
+{requirement}
+
+Analyze and provide:
+
+1. Requirement Summary
+2. Impacted Modules
+3. Required Validations
+4. Regression Testing Areas
+5. Risks and Dependencies
+
+Provide structured output.
+"""
+
+            response = model.generate_content(
+                prompt
+            )
+
+            ai_output = response.text
+
+            # -----------------------------------
+            # DISPLAY AI ANALYSIS
+            # -----------------------------------
+
+            st.subheader(
+                "AI Analysis"
+            )
+
+            st.write(ai_output)
