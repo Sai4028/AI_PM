@@ -2,3 +2,4 @@ streamlit
 pymupdf
 openai
 google-generativeai
+pydantic-settings
