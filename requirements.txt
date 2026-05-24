@@ -4,4 +4,4 @@ sentence-transformers
 faiss-cpu
 numpy
 python-docx
-google-generativeai
+requests
