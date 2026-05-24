@@ -6,6 +6,7 @@ import faiss
 import numpy as np
 
 from sentence_transformers import SentenceTransformer
+from docx import Document
 
 # -----------------------------------
 # PAGE CONFIG
@@ -61,8 +62,8 @@ else:
 st.subheader("Upload Additional Documents")
 
 uploaded_files = st.file_uploader(
-    "Upload PDFs",
-    type=["pdf"],
+    "Upload PDFs or DOCX",
+    type=["pdf", "docx"],
     accept_multiple_files=True
 )
 
@@ -115,143 +116,231 @@ if analyze:
                 )
 
         # -----------------------------------
-        # READ REPOSITORY
+        # FILTER FILES
         # -----------------------------------
-
-        all_chunks = []
 
         repository_files = os.listdir(
             "repository"
         )
 
+        filtered_files = []
+
+        requirement_lower = requirement.lower()
+
         for file in repository_files:
+
+            file_lower = file.lower()
+
+            # CUSTOMER
+
+            if "customer" in requirement_lower:
+
+                if "customer" in file_lower:
+
+                    filtered_files.append(file)
+
+            # SUPPLIER / VENDOR
+
+            elif (
+                "supplier" in requirement_lower
+                or
+                "vendor" in requirement_lower
+            ):
+
+                if (
+                    "supplier" in file_lower
+                    or
+                    "vendor" in file_lower
+                ):
+
+                    filtered_files.append(file)
+
+            # INVENTORY
+
+            elif "inventory" in requirement_lower:
+
+                if "inventory" in file_lower:
+
+                    filtered_files.append(file)
+
+            # FINANCE
+
+            elif "finance" in requirement_lower:
+
+                if "finance" in file_lower:
+
+                    filtered_files.append(file)
+
+            # DEFAULT
+
+            else:
+
+                filtered_files.append(file)
+
+        # -----------------------------------
+        # READ DOCUMENTS
+        # -----------------------------------
+
+        all_chunks = []
+
+        for file in filtered_files:
+
+            file_path = os.path.join(
+                "repository",
+                file
+            )
+
+            text = ""
+
+            # PDF
 
             if file.endswith(".pdf"):
 
-                file_path = os.path.join(
-                    "repository",
-                    file
-                )
-
                 doc = fitz.open(file_path)
-
-                text = ""
 
                 for page in doc:
 
                     text += page.get_text()
 
-                # -----------------------------------
-                # CLEAN TEXT
-                # -----------------------------------
+            # DOCX
 
-                clean_text = re.sub(
-                    r'\\s+',
-                    ' ',
-                    text
+            elif file.endswith(".docx"):
+
+                doc = Document(file_path)
+
+                for para in doc.paragraphs:
+
+                    text += para.text + " "
+
+            # -----------------------------------
+            # CLEAN TEXT
+            # -----------------------------------
+
+            clean_text = re.sub(
+                r'\s+',
+                ' ',
+                text
+            )
+
+            # -----------------------------------
+            # CHUNKING
+            # -----------------------------------
+
+            chunk_size = 400
+
+            for i in range(
+                0,
+                len(clean_text),
+                chunk_size
+            ):
+
+                chunk = clean_text[
+                    i:i+chunk_size
+                ]
+
+                all_chunks.append({
+
+                    "source": file,
+
+                    "text": chunk
+
+                })
+
+        # -----------------------------------
+        # CHECK EMPTY CHUNKS
+        # -----------------------------------
+
+        if not all_chunks:
+
+            st.warning(
+                "No matching repository documents found"
+            )
+
+        else:
+
+            # -----------------------------------
+            # CREATE EMBEDDINGS
+            # -----------------------------------
+
+            chunk_texts = [
+
+                chunk["text"]
+
+                for chunk in all_chunks
+
+            ]
+
+            embeddings = embedding_model.encode(
+                chunk_texts
+            )
+
+            embeddings = np.array(
+                embeddings
+            ).astype("float32")
+
+            # -----------------------------------
+            # CREATE FAISS INDEX
+            # -----------------------------------
+
+            dimension = embeddings.shape[1]
+
+            index = faiss.IndexFlatL2(
+                dimension
+            )
+
+            index.add(embeddings)
+
+            # -----------------------------------
+            # QUERY EMBEDDING
+            # -----------------------------------
+
+            query_embedding = embedding_model.encode(
+                [requirement]
+            )
+
+            query_embedding = np.array(
+                query_embedding
+            ).astype("float32")
+
+            # -----------------------------------
+            # SEARCH
+            # -----------------------------------
+
+            k = 5
+
+            distances, indices = index.search(
+                query_embedding,
+                k
+            )
+
+            # -----------------------------------
+            # DISPLAY RESULTS
+            # -----------------------------------
+
+            st.subheader(
+                "Relevant Repository Matches"
+            )
+
+            rank = 1
+
+            for idx in indices[0]:
+
+                match = all_chunks[idx]
+
+                st.markdown("---")
+
+                st.markdown(
+                    f"## Match Rank: {rank}"
                 )
 
-                # -----------------------------------
-                # CHUNKING
-                # -----------------------------------
+                st.markdown(
+                    f"### Source File: {match['source']}"
+                )
 
-                chunk_size = 400
+                st.markdown(
+                    "### Relevant Section"
+                )
 
-                for i in range(
-                    0,
-                    len(clean_text),
-                    chunk_size
-                ):
+                st.write(match["text"])
 
-                    chunk = clean_text[
-                        i:i+chunk_size
-                    ]
-
-                    all_chunks.append({
-                        "source": file,
-                        "text": chunk
-                    })
-
-        # -----------------------------------
-        # CREATE EMBEDDINGS
-        # -----------------------------------
-
-        chunk_texts = [
-            chunk["text"]
-            for chunk in all_chunks
-        ]
-
-        embeddings = embedding_model.encode(
-            chunk_texts
-        )
-
-        embeddings = np.array(
-            embeddings
-        ).astype("float32")
-
-        # -----------------------------------
-        # FAISS INDEX
-        # -----------------------------------
-
-        dimension = embeddings.shape[1]
-
-        index = faiss.IndexFlatL2(
-            dimension
-        )
-
-        index.add(embeddings)
-
-        # -----------------------------------
-        # QUERY EMBEDDING
-        # -----------------------------------
-
-        query_embedding = embedding_model.encode(
-            [requirement]
-        )
-
-        query_embedding = np.array(
-            query_embedding
-        ).astype("float32")
-
-        # -----------------------------------
-        # SEARCH
-        # -----------------------------------
-
-        k = 5
-
-        distances, indices = index.search(
-            query_embedding,
-            k
-        )
-
-        # -----------------------------------
-        # DISPLAY RESULTS
-        # -----------------------------------
-
-        st.subheader(
-            "Relevant Repository Matches"
-        )
-
-        rank = 1
-
-        for idx in indices[0]:
-
-            match = all_chunks[idx]
-
-            st.markdown("---")
-
-            st.markdown(
-                f"## Match Rank: {rank}"
-            )
-
-            st.markdown(
-                f"### Source File: {match['source']}"
-            )
-
-            st.markdown(
-                "### Relevant Section"
-            )
-
-            st.write(match["text"])
-
-            rank += 1
+                rank += 1
