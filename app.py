@@ -45,28 +45,34 @@ embedding_model = SentenceTransformer(
 )
 
 # -----------------------------------
-# UI
+# UI TITLE
 # -----------------------------------
 
 st.title("AI PM Assistant")
 
 # -----------------------------------
-# REPOSITORY FILES
+# REPOSITORY STATUS
 # -----------------------------------
-
-st.subheader("Repository Files")
 
 repository_files = os.listdir("repository")
 
-if repository_files:
+repo_count = len(repository_files)
 
-    for file in repository_files:
+st.subheader(
+    f"Repository Files Count: {repo_count}"
+)
 
-        st.write(file)
+with st.expander("View Repository Files"):
 
-else:
+    if repository_files:
 
-    st.warning("Repository is empty")
+        for file in repository_files:
+
+            st.write(file)
+
+    else:
+
+        st.warning("Repository is empty")
 
 # -----------------------------------
 # FILE UPLOAD
@@ -79,6 +85,28 @@ uploaded_files = st.file_uploader(
     type=["pdf", "docx"],
     accept_multiple_files=True
 )
+
+uploaded_count = 0
+
+if uploaded_files:
+
+    uploaded_count = len(uploaded_files)
+
+st.subheader(
+    f"Uploaded Files Count: {uploaded_count}"
+)
+
+with st.expander("View Uploaded Files"):
+
+    if uploaded_files:
+
+        for file in uploaded_files:
+
+            st.write(file.name)
+
+    else:
+
+        st.write("No uploaded files")
 
 # -----------------------------------
 # REQUIREMENT INPUT
@@ -124,6 +152,10 @@ if analyze:
                         uploaded_file.getbuffer()
                     )
 
+                st.success(
+                    f"{uploaded_file.name} saved successfully"
+                )
+
         # -----------------------------------
         # FILTER FILES
         # -----------------------------------
@@ -140,11 +172,15 @@ if analyze:
 
             file_lower = file.lower()
 
+            # CUSTOMER
+
             if "customer" in requirement_lower:
 
                 if "customer" in file_lower:
 
                     filtered_files.append(file)
+
+            # SUPPLIER / VENDOR
 
             elif (
                 "supplier" in requirement_lower
@@ -160,17 +196,23 @@ if analyze:
 
                     filtered_files.append(file)
 
+            # INVENTORY
+
             elif "inventory" in requirement_lower:
 
                 if "inventory" in file_lower:
 
                     filtered_files.append(file)
 
+            # FINANCE
+
             elif "finance" in requirement_lower:
 
                 if "finance" in file_lower:
 
                     filtered_files.append(file)
+
+            # DEFAULT
 
             else:
 
@@ -211,7 +253,9 @@ if analyze:
 
                     text += para.text + " "
 
-            # CLEAN
+            # -----------------------------------
+            # CLEAN TEXT
+            # -----------------------------------
 
             clean_text = re.sub(
                 r'\s+',
@@ -219,7 +263,9 @@ if analyze:
                 text
             )
 
+            # -----------------------------------
             # CHUNKING
+            # -----------------------------------
 
             chunk_size = 400
 
@@ -242,7 +288,7 @@ if analyze:
                 })
 
         # -----------------------------------
-        # CHECK EMPTY
+        # CHECK EMPTY CHUNKS
         # -----------------------------------
 
         if not all_chunks:
@@ -254,7 +300,7 @@ if analyze:
         else:
 
             # -----------------------------------
-            # EMBEDDINGS
+            # CREATE EMBEDDINGS
             # -----------------------------------
 
             chunk_texts = [
@@ -274,7 +320,7 @@ if analyze:
             ).astype("float32")
 
             # -----------------------------------
-            # FAISS INDEX
+            # CREATE FAISS INDEX
             # -----------------------------------
 
             dimension = embeddings.shape[1]
@@ -327,7 +373,7 @@ if analyze:
                 )
 
             # -----------------------------------
-            # DISPLAY MATCHES
+            # DISPLAY RETRIEVAL RESULTS
             # -----------------------------------
 
             st.subheader(
@@ -348,6 +394,10 @@ if analyze:
 
                 st.markdown(
                     f"### Source File: {match['source']}"
+                )
+
+                st.markdown(
+                    "### Relevant Section"
                 )
 
                 st.write(match["text"])
