@@ -3,3 +3,4 @@ pymupdf
 sentence-transformers
 faiss-cpu
 numpy
+python-docx
