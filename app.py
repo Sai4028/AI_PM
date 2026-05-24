@@ -1,9 +1,9 @@
-
 import streamlit as st
 import fitz
 import os
 import re
-import chromadb
+import faiss
+import numpy as np
 
 from sentence_transformers import SentenceTransformer
 
@@ -28,16 +28,6 @@ os.makedirs("repository", exist_ok=True)
 
 embedding_model = SentenceTransformer(
     "all-MiniLM-L6-v2"
-)
-
-# -----------------------------------
-# CHROMA DB
-# -----------------------------------
-
-chroma_client = chromadb.Client()
-
-collection = chroma_client.get_or_create_collection(
-    name="enterprise_docs"
 )
 
 # -----------------------------------
@@ -98,7 +88,7 @@ if analyze:
         # READ ALL REPOSITORY FILES
         # -----------------------------------
 
-        all_text = ""
+        all_chunks = []
 
         repository_files = os.listdir(
             "repository"
@@ -115,80 +105,92 @@ if analyze:
 
                 doc = fitz.open(file_path)
 
+                text = ""
+
                 for page in doc:
 
-                    all_text += page.get_text()
+                    text += page.get_text()
+
+                # -----------------------------------
+                # CLEAN TEXT
+                # -----------------------------------
+
+                clean_text = re.sub(
+                    r'\\s+',
+                    ' ',
+                    text
+                )
+
+                # -----------------------------------
+                # CHUNKING
+                # -----------------------------------
+
+                chunk_size = 400
+
+                for i in range(
+                    0,
+                    len(clean_text),
+                    chunk_size
+                ):
+
+                    chunk = clean_text[i:i+chunk_size]
+
+                    all_chunks.append({
+                        "source": file,
+                        "text": chunk
+                    })
 
         # -----------------------------------
-        # CLEAN TEXT
+        # CREATE EMBEDDINGS
         # -----------------------------------
 
-        clean_text = re.sub(
-            r'\\s+',
-            ' ',
-            all_text
+        chunk_texts = [
+            chunk["text"]
+            for chunk in all_chunks
+        ]
+
+        embeddings = embedding_model.encode(
+            chunk_texts
         )
 
-        # -----------------------------------
-        # CHUNKING
-        # -----------------------------------
-
-        chunk_size = 400
-
-        chunks = []
-
-        for i in range(
-            0,
-            len(clean_text),
-            chunk_size
-        ):
-
-            chunks.append(
-                clean_text[i:i+chunk_size]
-            )
+        embeddings = np.array(
+            embeddings
+        ).astype("float32")
 
         # -----------------------------------
-        # RESET VECTOR DB
+        # CREATE FAISS INDEX
         # -----------------------------------
 
-        try:
+        dimension = embeddings.shape[1]
 
-            collection.delete(where={})
+        index = faiss.IndexFlatL2(
+            dimension
+        )
 
-        except:
-
-            pass
-
-        # -----------------------------------
-        # STORE EMBEDDINGS
-        # -----------------------------------
-
-        for idx, chunk in enumerate(chunks):
-
-            embedding = embedding_model.encode(
-                chunk
-            ).tolist()
-
-            collection.add(
-                documents=[chunk],
-                embeddings=[embedding],
-                ids=[str(idx)]
-            )
+        index.add(embeddings)
 
         # -----------------------------------
-        # SEMANTIC SEARCH
+        # QUERY EMBEDDING
         # -----------------------------------
 
         query_embedding = embedding_model.encode(
-            requirement
-        ).tolist()
-
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=5
+            [requirement]
         )
 
-        retrieved_chunks = results["documents"][0]
+        query_embedding = np.array(
+            query_embedding
+        ).astype("float32")
+
+        # -----------------------------------
+        # SEARCH
+        # -----------------------------------
+
+        k = 5
+
+        distances, indices = index.search(
+            query_embedding,
+            k
+        )
 
         # -----------------------------------
         # DISPLAY RESULTS
@@ -198,16 +200,14 @@ if analyze:
             "Relevant Repository Matches"
         )
 
-        if retrieved_chunks:
+        for idx in indices[0]:
 
-            for match in retrieved_chunks:
+            match = all_chunks[idx]
 
-                st.markdown("---")
+            st.markdown("---")
 
-                st.write(match)
-
-        else:
-
-            st.warning(
-                "No relevant matches found"
+            st.markdown(
+                f"### Source: {match['source']}"
             )
+
+            st.write(match["text"])
