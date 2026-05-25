@@ -104,7 +104,7 @@ st.subheader("Enter Requirement")
 
 requirement = st.text_area(
     "Requirement",
-    height=150
+    height=200
 )
 
 analyze = st.button("Analyze Requirement")
@@ -145,74 +145,19 @@ if analyze:
                 )
 
         # -----------------------------------
-        # FILTER FILES
+        # READ DOCUMENTS
         # -----------------------------------
 
         repository_files = os.listdir(
             "repository"
         )
 
-        filtered_files = []
-
-        requirement_lower = requirement.lower()
-
-        for file in repository_files:
-
-            file_lower = file.lower()
-
-            # CUSTOMER
-
-            if "customer" in requirement_lower:
-
-                if "customer" in file_lower:
-
-                    filtered_files.append(file)
-
-            # SUPPLIER / VENDOR
-
-            elif (
-                "supplier" in requirement_lower
-                or
-                "vendor" in requirement_lower
-            ):
-
-                if (
-                    "supplier" in file_lower
-                    or
-                    "vendor" in file_lower
-                ):
-
-                    filtered_files.append(file)
-
-            # INVENTORY
-
-            elif "inventory" in requirement_lower:
-
-                if "inventory" in file_lower:
-
-                    filtered_files.append(file)
-
-            # FINANCE
-
-            elif "finance" in requirement_lower:
-
-                if "finance" in file_lower:
-
-                    filtered_files.append(file)
-
-            # DEFAULT
-
-            else:
-
-                filtered_files.append(file)
-
-        # -----------------------------------
-        # READ DOCUMENTS
-        # -----------------------------------
-
         all_chunks = []
 
-        for file in filtered_files:
+        chunk_size = 800
+        chunk_overlap = 100
+
+        for file in repository_files:
 
             file_path = os.path.join(
                 "repository",
@@ -221,59 +166,67 @@ if analyze:
 
             text = ""
 
-            # PDF
+            try:
 
-            if file.endswith(".pdf"):
+                # PDF
 
-                doc = fitz.open(file_path)
+                if file.endswith(".pdf"):
 
-                for page in doc:
+                    doc = fitz.open(file_path)
 
-                    text += page.get_text()
+                    for page in doc:
 
-            # DOCX
+                        text += page.get_text()
 
-            elif file.endswith(".docx"):
+                # DOCX
 
-                doc = Document(file_path)
+                elif file.endswith(".docx"):
 
-                for para in doc.paragraphs:
+                    doc = Document(file_path)
 
-                    text += para.text + " "
+                    for para in doc.paragraphs:
 
-            # -----------------------------------
-            # CLEAN TEXT
-            # -----------------------------------
+                        text += para.text + " "
 
-            clean_text = re.sub(
-                r'\s+',
-                ' ',
-                text
-            )
+                # -----------------------------------
+                # CLEAN TEXT
+                # -----------------------------------
 
-            # -----------------------------------
-            # CHUNKING
-            # -----------------------------------
+                clean_text = re.sub(
+                    r'\s+',
+                    ' ',
+                    text
+                )
 
-            chunk_size = 400
+                # -----------------------------------
+                # CHUNKING
+                # -----------------------------------
 
-            for i in range(
-                0,
-                len(clean_text),
-                chunk_size
-            ):
+                start = 0
 
-                chunk = clean_text[
-                    i:i+chunk_size
-                ]
+                while start < len(clean_text):
 
-                all_chunks.append({
+                    end = start + chunk_size
 
-                    "source": file,
+                    chunk = clean_text[start:end]
 
-                    "text": chunk
+                    all_chunks.append({
 
-                })
+                        "source": file,
+
+                        "text": chunk
+
+                    })
+
+                    start += (
+                        chunk_size - chunk_overlap
+                    )
+
+            except Exception as e:
+
+                st.error(
+                    f"Error processing {file}: {e}"
+                )
 
         # -----------------------------------
         # CHECK EMPTY CHUNKS
@@ -282,7 +235,7 @@ if analyze:
         if not all_chunks:
 
             st.warning(
-                "No matching repository documents found"
+                "No repository content found"
             )
 
         else:
@@ -359,11 +312,11 @@ if analyze:
                 match = all_chunks[idx]
 
                 final_context += (
-                    f"Source: {match['source']}\n"
+                    f"\nSource: {match['source']}\n"
                 )
 
                 final_context += (
-                    match["text"] + "\n\n"
+                    match["text"] + "\n"
                 )
 
                 st.markdown("---")
@@ -376,13 +329,15 @@ if analyze:
                     f"### Source File: {match['source']}"
                 )
 
-                st.markdown(
-                    "### Relevant Section"
-                )
-
                 st.write(match["text"])
 
                 rank += 1
+
+            # -----------------------------------
+            # LIMIT CONTEXT
+            # -----------------------------------
+
+            final_context = final_context[:12000]
 
             # -----------------------------------
             # AI PROMPT
@@ -391,21 +346,30 @@ if analyze:
             prompt = f"""
 You are an ERP Product Management AI Assistant.
 
+Use the enterprise repository references provided below.
+
 Enterprise Context:
 {final_context}
 
 Requirement:
 {requirement}
 
-Analyze and provide:
+Generate structured enterprise-grade analysis.
+
+Return output with the following sections:
 
 1. Requirement Summary
-2. Impacted Modules
-3. Required Validations
-4. Regression Testing Areas
-5. Risks and Dependencies
+2. Functional Overview
+3. Impacted Modules
+4. Business Rules
+5. Required Validations
+6. Dependencies
+7. Risks
+8. Regression Testing Areas
+9. Acceptance Criteria
 
-Provide structured output.
+Use repository references where relevant.
+Avoid unsupported assumptions.
 """
 
             # -----------------------------------
@@ -414,7 +378,10 @@ Provide structured output.
 
             api_key = st.secrets["GEMINI_API_KEY"]
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            url = (
+                "https://generativelanguage.googleapis.com/"
+                f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
+            )
 
             headers = {
                 "Content-Type": "application/json"
@@ -456,7 +423,7 @@ Provide structured output.
 
                 st.write(ai_output)
 
-            except:
+            except Exception as e:
 
                 st.error(
                     "AI response generation failed"
