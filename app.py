@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # -----------------------------------
-# ORION CLEAN UI THEME
+# CLEAN ENTERPRISE UI
 # -----------------------------------
 
 st.markdown(
@@ -28,7 +28,7 @@ st.markdown(
     <style>
 
     .stApp {
-        background-color: #F5F7FB;
+        background-color: #F8FAFC;
         color: #1E293B;
         font-family: 'Segoe UI', sans-serif;
     }
@@ -41,113 +41,107 @@ st.markdown(
     }
 
     h1 {
-        color: #1E293B;
-        font-size: 3rem;
+        color: #0F172A;
+        font-size: 2.8rem;
         font-weight: 700;
-        margin-bottom: 0.3rem;
     }
 
     h2, h3 {
-        color: #334155;
+        color: #1E293B;
         font-weight: 600;
     }
 
     div[data-testid="metric-container"] {
-        background-color: white;
+
+        background: white;
+
         border: 1px solid #E2E8F0;
+
         padding: 1rem;
-        border-radius: 14px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.04);
+
+        border-radius: 12px;
     }
 
     .stButton > button {
-        background: linear-gradient(
-            90deg,
-            #34D399,
-            #10B981
-        );
+
+        background-color: #2563EB;
+
         color: white;
+
         border: none;
-        border-radius: 10px;
-        padding: 0.65rem 1rem;
+
+        border-radius: 8px;
+
+        padding: 0.6rem 1rem;
+
         font-weight: 600;
-        width: 100%;
     }
 
     .stButton > button:hover {
-        background: linear-gradient(
-            90deg,
-            #10B981,
-            #059669
-        );
+
+        background-color: #1D4ED8;
+
         color: white;
     }
 
     .stDownloadButton > button {
-        background: linear-gradient(
-            90deg,
-            #6366F1,
-            #4F46E5
-        );
+
+        background-color: #059669;
+
         color: white;
+
         border: none;
-        border-radius: 10px;
-        padding: 0.65rem 1rem;
+
+        border-radius: 8px;
+
+        padding: 0.6rem 1rem;
+
         font-weight: 600;
-        width: 100%;
     }
 
     .stTextArea textarea {
-        border-radius: 12px;
-        border: 1px solid #CBD5E1;
+
         background-color: white;
+
         color: #111827;
-        padding: 1rem;
+
+        border: 1px solid #CBD5E1;
+
+        border-radius: 10px;
     }
 
     section[data-testid="stFileUploader"] {
+
         background-color: white;
+
         border: 1px dashed #CBD5E1;
-        border-radius: 14px;
+
+        border-radius: 10px;
+
         padding: 1rem;
     }
 
-    section[data-testid="stFileUploader"] button {
-        background-color: #F8FAFC !important;
-        color: #1E293B !important;
-        border: 1px solid #CBD5E1 !important;
+    button[data-baseweb="tab"] {
+
+        color: #334155 !important;
+
+        font-weight: 600;
+
+        font-size: 15px;
+    }
+
+    button[data-baseweb="tab"][aria-selected="true"] {
+
+        color: #2563EB !important;
+
+        border-bottom: 2px solid #2563EB;
     }
 
     .streamlit-expanderHeader {
-        background-color: #ECFDF5;
-        color: #065F46;
-        border-radius: 8px;
-        padding: 0.5rem;
-    }
 
-    .stSelectbox div[data-baseweb="select"] {
-        background-color: white;
-        border-radius: 10px;
-        border: 1px solid #CBD5E1;
-    }
+        color: #1E293B;
 
-    .stSuccess {
-        background-color: #DCFCE7;
-        border-radius: 10px;
-    }
-
-    .stWarning {
-        background-color: #FEF3C7;
-        border-radius: 10px;
-    }
-
-    .stError {
-        background-color: #FEE2E2;
-        border-radius: 10px;
-    }
-
-    hr {
-        border-top: 1px solid #E2E8F0;
+        font-weight: 600;
     }
 
     </style>
@@ -179,6 +173,9 @@ if "generated_fsd" not in st.session_state:
 
 if "approved_fsd" not in st.session_state:
     st.session_state.approved_fsd = ""
+
+if "qa_generated" not in st.session_state:
+    st.session_state.qa_generated = False
 
 # -----------------------------------
 # TITLE
@@ -226,19 +223,15 @@ with col3:
 
 tab1, tab2, tab3 = st.tabs([
     "FSD Generation",
-    "QA",
+    "QA Test Cases",
     "Release Notes"
 ])
 
 # ===================================
-# TAB 1 - FSD GENERATION
+# TAB 1
 # ===================================
 
 with tab1:
-
-    # -----------------------------------
-    # REPOSITORY VIEW
-    # -----------------------------------
 
     with st.expander("View Repository Files"):
 
@@ -250,10 +243,6 @@ with tab1:
         else:
             st.warning("Repository is empty")
 
-    # -----------------------------------
-    # FILE UPLOAD
-    # -----------------------------------
-
     st.subheader("Upload Additional Documents")
 
     uploaded_files = st.file_uploader(
@@ -261,10 +250,6 @@ with tab1:
         type=["pdf", "docx"],
         accept_multiple_files=True
     )
-
-    # -----------------------------------
-    # REQUIREMENT
-    # -----------------------------------
 
     st.subheader("Enter Requirement")
 
@@ -275,10 +260,6 @@ with tab1:
 
     analyze = st.button("Generate FSD")
 
-    # -----------------------------------
-    # GENERATE FSD
-    # -----------------------------------
-
     if analyze:
 
         if not requirement:
@@ -286,8 +267,6 @@ with tab1:
             st.error("Please enter requirement")
 
         else:
-
-            # SAVE FILES
 
             if uploaded_files:
 
@@ -299,7 +278,6 @@ with tab1:
                     )
 
                     with open(file_path, "wb") as f:
-
                         f.write(
                             uploaded_file.getbuffer()
                         )
@@ -312,10 +290,6 @@ with tab1:
 
             chunk_size = 800
             chunk_overlap = 100
-
-            # -----------------------------------
-            # READ FILES
-            # -----------------------------------
 
             for file in repository_files:
 
@@ -373,10 +347,6 @@ with tab1:
                         f"Error processing {file}: {e}"
                     )
 
-            # -----------------------------------
-            # EMBEDDINGS
-            # -----------------------------------
-
             chunk_texts = [
 
                 chunk["text"]
@@ -413,10 +383,6 @@ with tab1:
                 5
             )
 
-            # -----------------------------------
-            # CONTEXT
-            # -----------------------------------
-
             final_context = ""
 
             reference_files = set()
@@ -447,10 +413,6 @@ with tab1:
 
             final_context = final_context[:12000]
 
-            # -----------------------------------
-            # PROMPT
-            # -----------------------------------
-
             prompt = f"""
 You are an ERP Product Management AI Assistant.
 
@@ -476,10 +438,6 @@ Return:
 10. Impacted Modules
 11. Regression Areas
 """
-
-            # -----------------------------------
-            # API
-            # -----------------------------------
 
             api_key = st.secrets["GEMINI_API_KEY"]
 
@@ -534,10 +492,6 @@ Return:
 
                 st.write(response_json)
 
-    # -----------------------------------
-    # PM REVIEW
-    # -----------------------------------
-
     if st.session_state.generated_fsd:
 
         st.subheader("PM Review & Edit")
@@ -548,149 +502,68 @@ Return:
             height=500
         )
 
-        col1, col2 = st.columns(2)
+        if st.button("Approve FSD"):
 
-        with col1:
-
-            if st.button("Approve FSD"):
-
-                st.session_state.approved_fsd = edited_fsd
-
-                st.success(
-                    "FSD Approved Successfully"
-                )
-
-        with col2:
-
-            section = st.selectbox(
-                "Regenerate Section",
-                [
-                    "Business Rules",
-                    "Required Validations",
-                    "Acceptance Criteria",
-                    "Regression Areas"
-                ]
-            )
-
-        if st.button("Regenerate Selected Section"):
-
-            regenerate_prompt = f"""
-Requirement:
-{requirement}
-
-Existing FSD:
-{edited_fsd}
-
-Regenerate only:
-{section}
-"""
-
-            api_key = st.secrets["GEMINI_API_KEY"]
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
-            )
-
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": regenerate_prompt
-                            }
-                        ]
-                    }
-                ]
-            }
-
-            response = requests.post(
-                url,
-                json=payload
-            )
-
-            response_json = response.json()
-
-            try:
-
-                regenerated_output = response_json[
-                    "candidates"
-                ][0]["content"]["parts"][0]["text"]
-
-                st.subheader(
-                    f"Regenerated {section}"
-                )
-
-                st.write(regenerated_output)
-
-            except:
-
-                st.error(
-                    "Section regeneration failed"
-                )
-
-    # -----------------------------------
-    # EXPORT
-    # -----------------------------------
-
-    if st.session_state.approved_fsd:
-
-        approved_fsd = st.session_state.approved_fsd
-
-        st.subheader("Approved FSD")
-
-        st.write(approved_fsd)
-
-        if st.button("Export Approved FSD"):
-
-            doc = Document()
-
-            doc.add_heading(
-                "Functional Specification Document",
-                level=1
-            )
-
-            current_date = datetime.now().strftime(
-                "%d-%m-%Y %H:%M"
-            )
-
-            doc.add_paragraph(
-                f"Generated On: {current_date}"
-            )
-
-            doc.add_paragraph(
-                "Generated By: AI PM Assistant"
-            )
-
-            doc.add_paragraph(
-                approved_fsd
-            )
-
-            timestamp = datetime.now().strftime(
-                "%Y%m%d_%H%M%S"
-            )
-
-            file_name = (
-                f"generated_fsds/FSD_{timestamp}.docx"
-            )
-
-            doc.save(file_name)
+            st.session_state.approved_fsd = edited_fsd
 
             st.success(
-                "FSD Exported Successfully"
+                "FSD Approved Successfully"
             )
 
-            with open(file_name, "rb") as file:
+        if st.session_state.approved_fsd:
 
-                st.download_button(
-                    label="Download FSD",
-                    data=file,
-                    file_name=f"FSD_{timestamp}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            approved_fsd = st.session_state.approved_fsd
+
+            if st.button("Export Approved FSD"):
+
+                doc = Document()
+
+                doc.add_heading(
+                    "Functional Specification Document",
+                    level=1
                 )
 
+                current_date = datetime.now().strftime(
+                    "%d-%m-%Y %H:%M"
+                )
+
+                doc.add_paragraph(
+                    f"Generated On: {current_date}"
+                )
+
+                doc.add_paragraph(
+                    "Generated By: AI PM Assistant"
+                )
+
+                doc.add_paragraph(
+                    approved_fsd
+                )
+
+                timestamp = datetime.now().strftime(
+                    "%Y%m%d_%H%M%S"
+                )
+
+                file_name = (
+                    f"generated_fsds/FSD_{timestamp}.docx"
+                )
+
+                doc.save(file_name)
+
+                st.success(
+                    "FSD Exported Successfully"
+                )
+
+                with open(file_name, "rb") as file:
+
+                    st.download_button(
+                        label="Download FSD",
+                        data=file,
+                        file_name=f"FSD_{timestamp}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+
 # ===================================
-# TAB 2 - QA
+# TAB 2
 # ===================================
 
 with tab2:
@@ -701,7 +574,7 @@ with tab2:
 
     if st.session_state.approved_fsd:
 
-        if st.button("Generate Test Cases"):
+        if st.button("Generate QA Test Cases"):
 
             approved_fsd = st.session_state.approved_fsd
 
@@ -752,29 +625,35 @@ Generate:
                     "candidates"
                 ][0]["content"]["parts"][0]["text"]
 
+                st.session_state.qa_generated = True
+
+                st.success(
+                    "QA Test Cases Generated Successfully"
+                )
+
                 st.write(test_cases)
 
             except:
 
                 st.error(
-                    "Test case generation failed"
+                    "QA generation failed"
                 )
 
     else:
 
         st.warning(
-            "Approve FSD before generating QA test cases"
+            "Approve FSD before generating QA Test Cases"
         )
 
 # ===================================
-# TAB 3 - RELEASE NOTES
+# TAB 3
 # ===================================
 
 with tab3:
 
     st.subheader("Release Notes")
 
-    if st.session_state.approved_fsd:
+    if st.session_state.qa_generated:
 
         if st.button(
             "Generate Release Notes"
@@ -828,6 +707,53 @@ Return:
                 ][0]["content"]["parts"][0]["text"]
 
                 st.write(release_notes)
+                # -----------------------------------
+# EXPORT RELEASE NOTES
+# -----------------------------------
+
+release_doc = Document()
+
+release_doc.add_heading(
+    "Release Notes",
+    level=1
+)
+
+current_date = datetime.now().strftime(
+    "%d-%m-%Y %H:%M"
+)
+
+release_doc.add_paragraph(
+    f"Generated On: {current_date}"
+)
+
+release_doc.add_paragraph(
+    "Generated By: AI PM Assistant"
+)
+
+release_doc.add_paragraph(
+    release_notes
+)
+
+release_file_name = (
+    f"generated_fsds/Release_Notes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+)
+
+release_doc.save(release_file_name)
+
+with open(release_file_name, "rb") as file:
+
+    st.download_button(
+
+        label="Download Release Notes",
+
+        data=file,
+
+        file_name=os.path.basename(
+            release_file_name
+        ),
+
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
 
             except:
 
@@ -838,5 +764,5 @@ Return:
     else:
 
         st.warning(
-            "Approve FSD before generating release notes"
+            "Generate QA Test Cases before Release Notes"
         )
