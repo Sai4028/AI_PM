@@ -5,9 +5,11 @@ import re
 import faiss
 import numpy as np
 import requests
+from datetime import datetime
 
 from sentence_transformers import SentenceTransformer
 from docx import Document
+from docx.shared import Inches
 
 # -----------------------------------
 # PAGE CONFIG
@@ -17,8 +19,9 @@ st.set_page_config(
     page_title="AI PM Assistant",
     layout="wide"
 )
+
 # -----------------------------------
-# ERP UI THEME
+#  ERP UI THEME
 # -----------------------------------
 
 st.markdown(
@@ -305,11 +308,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # -----------------------------------
-# CREATE REPOSITORY
+# CREATE FOLDERS
 # -----------------------------------
 
 os.makedirs("repository", exist_ok=True)
+os.makedirs("generated_fsds", exist_ok=True)
 
 # -----------------------------------
 # EMBEDDING MODEL
@@ -318,6 +323,16 @@ os.makedirs("repository", exist_ok=True)
 embedding_model = SentenceTransformer(
     "all-MiniLM-L6-v2"
 )
+
+# -----------------------------------
+# SESSION STATE
+# -----------------------------------
+
+if "generated_fsd" not in st.session_state:
+    st.session_state.generated_fsd = ""
+
+if "approved_fsd" not in st.session_state:
+    st.session_state.approved_fsd = ""
 
 # -----------------------------------
 # UI TITLE
@@ -331,23 +346,9 @@ st.title("AI PM Assistant")
 
 repository_files = os.listdir("repository")
 
-repo_count = len(repository_files)
-
 st.subheader(
-    f"Repository Files Count: {repo_count}"
+    f"Repository Files Count: {len(repository_files)}"
 )
-
-with st.expander("View Repository Files"):
-
-    if repository_files:
-
-        for file in repository_files:
-
-            st.write(file)
-
-    else:
-
-        st.warning("Repository is empty")
 
 # -----------------------------------
 # FILE UPLOAD
@@ -361,28 +362,6 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-uploaded_count = 0
-
-if uploaded_files:
-
-    uploaded_count = len(uploaded_files)
-
-st.subheader(
-    f"Uploaded Files Count: {uploaded_count}"
-)
-
-with st.expander("View Uploaded Files"):
-
-    if uploaded_files:
-
-        for file in uploaded_files:
-
-            st.write(file.name)
-
-    else:
-
-        st.write("No uploaded files")
-
 # -----------------------------------
 # REQUIREMENT INPUT
 # -----------------------------------
@@ -394,7 +373,7 @@ requirement = st.text_area(
     height=200
 )
 
-analyze = st.button("Analyze Requirement")
+analyze = st.button("Generate FSD")
 
 # -----------------------------------
 # MAIN FLOW
@@ -423,21 +402,13 @@ if analyze:
 
                 with open(file_path, "wb") as f:
 
-                    f.write(
-                        uploaded_file.getbuffer()
-                    )
-
-                st.success(
-                    f"{uploaded_file.name} saved successfully"
-                )
+                    f.write(uploaded_file.getbuffer())
 
         # -----------------------------------
-        # READ DOCUMENTS
+        # READ DOCS
         # -----------------------------------
 
-        repository_files = os.listdir(
-            "repository"
-        )
+        repository_files = os.listdir("repository")
 
         all_chunks = []
 
@@ -475,9 +446,7 @@ if analyze:
 
                         text += para.text + " "
 
-                # -----------------------------------
-                # CLEAN TEXT
-                # -----------------------------------
+                # CLEAN
 
                 clean_text = re.sub(
                     r'\s+',
@@ -485,9 +454,7 @@ if analyze:
                     text
                 )
 
-                # -----------------------------------
                 # CHUNKING
-                # -----------------------------------
 
                 start = 0
 
@@ -511,24 +478,22 @@ if analyze:
 
             except Exception as e:
 
-                st.error(
-                    f"Error processing {file}: {e}"
-                )
+                st.error(f"Error processing {file}: {e}")
 
         # -----------------------------------
-        # CHECK EMPTY CHUNKS
+        # EMPTY CHECK
         # -----------------------------------
 
         if not all_chunks:
 
             st.warning(
-                "No repository content found"
+                "No repository documents found"
             )
 
         else:
 
             # -----------------------------------
-            # CREATE EMBEDDINGS
+            # EMBEDDINGS
             # -----------------------------------
 
             chunk_texts = [
@@ -548,7 +513,7 @@ if analyze:
             ).astype("float32")
 
             # -----------------------------------
-            # CREATE FAISS INDEX
+            # FAISS
             # -----------------------------------
 
             dimension = embeddings.shape[1]
@@ -560,7 +525,7 @@ if analyze:
             index.add(embeddings)
 
             # -----------------------------------
-            # QUERY EMBEDDING
+            # QUERY
             # -----------------------------------
 
             query_embedding = embedding_model.encode(
@@ -588,6 +553,8 @@ if analyze:
 
             final_context = ""
 
+            reference_files = set()
+
             st.subheader(
                 "Relevant Repository Matches"
             )
@@ -597,6 +564,10 @@ if analyze:
             for idx in indices[0]:
 
                 match = all_chunks[idx]
+
+                reference_files.add(
+                    match["source"]
+                )
 
                 final_context += (
                     f"\nSource: {match['source']}\n"
@@ -609,58 +580,52 @@ if analyze:
                 st.markdown("---")
 
                 st.markdown(
-                    f"## Match Rank: {rank}"
-                )
-
-                st.markdown(
-                    f"### Source File: {match['source']}"
+                    f"### Match Rank: {rank}"
                 )
 
                 st.write(match["text"])
 
                 rank += 1
 
-            # -----------------------------------
             # LIMIT CONTEXT
-            # -----------------------------------
 
             final_context = final_context[:12000]
 
             # -----------------------------------
-            # AI PROMPT
+            # PROMPT
             # -----------------------------------
 
             prompt = f"""
 You are an ERP Product Management AI Assistant.
 
-Use the enterprise repository references provided below.
-
-Enterprise Context:
+Enterprise Repository Context:
 {final_context}
 
 Requirement:
 {requirement}
 
-Generate structured enterprise-grade analysis.
+Generate a structured enterprise-grade Functional Specification Document.
 
-Return output with the following sections:
+Return output in the following format:
 
-1. Requirement Summary
-2. Functional Overview
-3. Impacted Modules
-4. Business Rules
-5. Required Validations
-6. Dependencies
-7. Risks
-8. Regression Testing Areas
+1. Objective
+2. Scope
+3. Functional Requirements
+4. Workflow
+5. Business Rules
+6. Required Validations
+7. Dependencies
+8. Risks
 9. Acceptance Criteria
+10. Impacted Modules
+11. Regression Testing Areas
 
-Use repository references where relevant.
 Avoid unsupported assumptions.
+Use repository references where relevant.
 """
 
             # -----------------------------------
-            # GEMINI API CALL
+            # GEMINI API
             # -----------------------------------
 
             api_key = st.secrets["GEMINI_API_KEY"]
@@ -695,7 +660,7 @@ Avoid unsupported assumptions.
             response_json = response.json()
 
             # -----------------------------------
-            # SAFE RESPONSE HANDLING
+            # RESPONSE
             # -----------------------------------
 
             try:
@@ -704,16 +669,291 @@ Avoid unsupported assumptions.
                     "candidates"
                 ][0]["content"]["parts"][0]["text"]
 
+                st.session_state.generated_fsd = ai_output
+
                 st.subheader(
-                    "AI Analysis"
+                    "Generated FSD"
                 )
 
                 st.write(ai_output)
 
+                # -----------------------------------
+                # REFERENCES USED
+                # -----------------------------------
+
+                st.subheader(
+                    "Reference Documents Used"
+                )
+
+                for ref in reference_files:
+
+                    st.write(f"- {ref}")
+
             except Exception as e:
 
                 st.error(
-                    "AI response generation failed"
+                    "AI generation failed"
                 )
 
                 st.write(response_json)
+
+# -----------------------------------
+# PM REVIEW SECTION
+# -----------------------------------
+
+if st.session_state.generated_fsd:
+
+    st.subheader("PM Review & Edit")
+
+    edited_fsd = st.text_area(
+
+        "Review / Edit Generated FSD",
+
+        value=st.session_state.generated_fsd,
+
+        height=500
+    )
+
+    # -----------------------------------
+    # APPROVE BUTTON
+    # -----------------------------------
+
+    if st.button("Approve FSD"):
+
+        st.session_state.approved_fsd = edited_fsd
+
+        st.success(
+            "FSD Approved Successfully"
+        )
+
+    # -----------------------------------
+    # SECTION REGENERATE
+    # -----------------------------------
+
+    st.subheader(
+        "Regenerate Specific Section"
+    )
+
+    section = st.selectbox(
+
+        "Select Section",
+
+        [
+            "Business Rules",
+            "Required Validations",
+            "Acceptance Criteria",
+            "Regression Testing Areas"
+        ]
+    )
+
+    if st.button("Regenerate Section"):
+
+        regenerate_prompt = f"""
+Requirement:
+{requirement}
+
+Existing FSD:
+{edited_fsd}
+
+Regenerate only this section:
+{section}
+
+Return only the regenerated section.
+"""
+
+        api_key = st.secrets["GEMINI_API_KEY"]
+
+        url = (
+            "https://generativelanguage.googleapis.com/"
+            f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": regenerate_prompt
+                        }
+                    ]
+                }
+            ]
+        }
+
+        response = requests.post(
+            url,
+            json=payload
+        )
+
+        response_json = response.json()
+
+        try:
+
+            regenerated_output = response_json[
+                "candidates"
+            ][0]["content"]["parts"][0]["text"]
+
+            st.subheader(
+                f"Regenerated {section}"
+            )
+
+            st.write(regenerated_output)
+
+        except:
+
+            st.error(
+                "Section regeneration failed"
+            )
+
+# -----------------------------------
+# SAVE APPROVED FSD
+# -----------------------------------
+
+if st.session_state.approved_fsd:
+
+    approved_fsd = st.session_state.approved_fsd
+
+    st.subheader(
+        "Approved FSD"
+    )
+
+    st.write(approved_fsd)
+
+    # -----------------------------------
+    # SAVE DOCX
+    # -----------------------------------
+
+    if st.button("Export Approved FSD"):
+
+        doc = Document()
+
+        # TITLE
+
+        doc.add_heading(
+            "Functional Specification Document",
+            level=1
+        )
+
+        # DATE
+
+        current_date = datetime.now().strftime(
+            "%d-%m-%Y %H:%M"
+        )
+
+        doc.add_paragraph(
+            f"Generated On: {current_date}"
+        )
+
+        doc.add_paragraph(
+            "Generated By: AI PM Assistant"
+        )
+
+        # CONTENT
+
+        doc.add_paragraph(
+            approved_fsd
+        )
+
+        # FILE NAME
+
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+
+        file_name = (
+            f"generated_fsds/FSD_{timestamp}.docx"
+        )
+
+        doc.save(file_name)
+
+        st.success(
+            "FSD Exported Successfully"
+        )
+
+        # DOWNLOAD BUTTON
+
+        with open(file_name, "rb") as file:
+
+            st.download_button(
+
+                label="Download FSD",
+
+                data=file,
+
+                file_name=f"FSD_{timestamp}.docx",
+
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+
+    # -----------------------------------
+    # QA TEST CASE GENERATION
+    # -----------------------------------
+
+    st.subheader(
+        "Generate QA Test Cases"
+    )
+
+    if st.button(
+        "Generate Test Cases"
+    ):
+
+        test_case_prompt = f"""
+You are a QA Test Engineer.
+
+Approved FSD:
+{approved_fsd}
+
+Generate:
+
+1. Functional Test Cases
+2. Validation Test Cases
+3. Negative Test Cases
+4. Regression Test Areas
+5. Edge Cases
+
+Provide structured output.
+"""
+
+        api_key = st.secrets["GEMINI_API_KEY"]
+
+        url = (
+            "https://generativelanguage.googleapis.com/"
+            f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": test_case_prompt
+                        }
+                    ]
+                }
+            ]
+        }
+
+        response = requests.post(
+            url,
+            json=payload
+        )
+
+        response_json = response.json()
+
+        try:
+
+            test_cases = response_json[
+                "candidates"
+            ][0]["content"]["parts"][0]["text"]
+
+            st.subheader(
+                "Generated QA Test Cases"
+            )
+
+            st.write(test_cases)
+
+        except:
+
+            st.error(
+                "Test case generation failed"
+            )
