@@ -189,7 +189,7 @@ st.markdown(
     """
 ### AI Product Execution Workflow
 
-Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → GTM Content → Support Notes
+Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → Support Notes → GTM Content → GTM PPT
 """
 )
 
