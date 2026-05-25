@@ -9,6 +9,8 @@ from datetime import datetime
 
 from sentence_transformers import SentenceTransformer
 from docx import Document
+from pptx import Presentation
+from pptx.util import Inches
 
 # -----------------------------------
 # PAGE CONFIG
