@@ -194,6 +194,9 @@ st.markdown(
 Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → Support Notes → GTM Content → GTM PPT
 """
 )
+repository_files = os.listdir(
+    "repository"
+)
 
 # -----------------------------------
 # METRICS
