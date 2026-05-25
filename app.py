@@ -17,7 +17,294 @@ st.set_page_config(
     page_title="AI PM Assistant",
     layout="wide"
 )
+# -----------------------------------
+# ERP UI THEME
+# -----------------------------------
 
+st.markdown(
+    """
+    <style>
+
+    /* GLOBAL */
+
+    .stApp {
+
+        background-color: #F5F7FB;
+
+        color: #1E293B;
+
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    /* REMOVE DEFAULT TOP SPACE */
+
+    .block-container {
+
+        padding-top: 2rem;
+
+        padding-left: 2rem;
+
+        padding-right: 2rem;
+
+        padding-bottom: 2rem;
+    }
+
+    /* TITLES */
+
+    h1 {
+
+        color: #1E293B;
+
+        font-size: 2.5rem;
+
+        font-weight: 700;
+    }
+
+    h2 {
+
+        color: #334155;
+
+        font-weight: 600;
+    }
+
+    h3 {
+
+        color: #475569;
+
+        font-weight: 600;
+    }
+
+    /* CARDS */
+
+    div[data-testid="stVerticalBlock"] > div {
+
+        background-color: white;
+
+        border-radius: 18px;
+
+        padding: 1.2rem;
+
+        border: 1px solid #E2E8F0;
+
+        box-shadow: 0px 2px 10px rgba(0,0,0,0.04);
+
+        margin-bottom: 1rem;
+    }
+
+    /* BUTTONS */
+
+    .stButton > button {
+
+        width: 100%;
+
+        background: linear-gradient(
+            90deg,
+            #34D399,
+            #10B981
+        );
+
+        color: white;
+
+        border: none;
+
+        border-radius: 12px;
+
+        padding: 0.7rem 1rem;
+
+        font-size: 15px;
+
+        font-weight: 600;
+
+        transition: 0.3s;
+    }
+
+    .stButton > button:hover {
+
+        background: linear-gradient(
+            90deg,
+            #10B981,
+            #059669
+        );
+
+        color: white;
+
+        transform: scale(1.01);
+    }
+
+    /* DOWNLOAD BUTTON */
+
+    .stDownloadButton > button {
+
+        width: 100%;
+
+        background: linear-gradient(
+            90deg,
+            #6366F1,
+            #4F46E5
+        );
+
+        color: white;
+
+        border: none;
+
+        border-radius: 12px;
+
+        padding: 0.7rem 1rem;
+
+        font-size: 15px;
+
+        font-weight: 600;
+    }
+
+    .stDownloadButton > button:hover {
+
+        background: linear-gradient(
+            90deg,
+            #4F46E5,
+            #4338CA
+        );
+
+        color: white;
+    }
+
+    /* TEXT AREA */
+
+    .stTextArea textarea {
+
+        border-radius: 14px;
+
+        border: 1px solid #CBD5E1;
+
+        background-color: #FFFFFF;
+
+        color: #111827;
+
+        padding: 1rem;
+
+        font-size: 15px;
+    }
+
+    /* INPUT */
+
+    .stTextInput input {
+
+        border-radius: 12px;
+
+        border: 1px solid #CBD5E1;
+    }
+
+    /* FILE UPLOADER */
+
+    section[data-testid="stFileUploader"] {
+
+        border-radius: 14px;
+
+        border: 1px dashed #94A3B8;
+
+        background-color: #FFFFFF;
+
+        padding: 1rem;
+    }
+
+    /* SELECTBOX */
+
+    .stSelectbox div[data-baseweb="select"] {
+
+        border-radius: 12px;
+    }
+
+    /* EXPANDER */
+
+    .streamlit-expanderHeader {
+
+        background-color: #ECFDF5;
+
+        border-radius: 10px;
+
+        color: #065F46;
+
+        font-weight: 600;
+    }
+
+    /* SUCCESS */
+
+    .stSuccess {
+
+        background-color: #DCFCE7;
+
+        color: #166534;
+
+        border-radius: 12px;
+
+        padding: 1rem;
+    }
+
+    /* WARNING */
+
+    .stWarning {
+
+        background-color: #FEF3C7;
+
+        color: #92400E;
+
+        border-radius: 12px;
+
+        padding: 1rem;
+    }
+
+    /* ERROR */
+
+    .stError {
+
+        background-color: #FEE2E2;
+
+        color: #991B1B;
+
+        border-radius: 12px;
+
+        padding: 1rem;
+    }
+
+    /* HORIZONTAL LINE */
+
+    hr {
+
+        border-top: 1px solid #E2E8F0;
+    }
+
+    /* SCROLLBAR */
+
+    ::-webkit-scrollbar {
+
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+
+        background: #CBD5E1;
+
+        border-radius: 10px;
+    }
+
+    /* METRIC STYLE */
+
+    div[data-testid="metric-container"] {
+
+        background-color: white;
+
+        border-radius: 16px;
+
+        border: 1px solid #E2E8F0;
+
+        padding: 1rem;
+
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.04);
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # -----------------------------------
 # CREATE REPOSITORY
 # -----------------------------------
