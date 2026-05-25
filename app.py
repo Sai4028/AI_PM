@@ -199,7 +199,39 @@ Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → S
 # METRICS
 # -----------------------------------
 
-repository_files = os.listdir("repository")
+generated_files = os.listdir(
+    "generated_fsds"
+)
+
+fsd_count = len([
+    f for f in generated_files
+    if f.startswith("FSD_")
+])
+
+qa_count = len([
+    f for f in generated_files
+    if f.startswith("QA_Test_Cases_")
+])
+
+release_count = len([
+    f for f in generated_files
+    if f.startswith("Release_Notes_")
+])
+
+support_count = len([
+    f for f in generated_files
+    if f.startswith("Support_Notes_")
+])
+
+gtm_count = len([
+    f for f in generated_files
+    if f.startswith("GTM_Content_")
+])
+
+ppt_count = len([
+    f for f in generated_files
+    if f.startswith("GTM_Presentation_")
+])
 
 col1, col2, col3 = st.columns(3)
 
@@ -211,16 +243,35 @@ with col1:
 
 with col2:
     st.metric(
-        "Generated FSDs",
-        len(os.listdir("generated_fsds"))
+        "FSDs",
+        fsd_count
     )
 
 with col3:
     st.metric(
-        "AI Status",
-        "Active"
+        "QA Docs",
+        qa_count
     )
 
+col4, col5, col6 = st.columns(3)
+
+with col4:
+    st.metric(
+        "Release Notes",
+        release_count
+    )
+
+with col5:
+    st.metric(
+        "Support Notes",
+        support_count
+    )
+
+with col6:
+    st.metric(
+        "PPTs",
+        ppt_count
+    )
 # -----------------------------------
 # TABS
 # -----------------------------------
