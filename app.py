@@ -185,11 +185,11 @@ if "qa_generated" not in st.session_state:
 # TITLE
 # -----------------------------------
 
-st.title("AI PM Assistant")
+st.title("AI Product Copilot")
 
 st.markdown(
     """
-### AI Product Execution Workflow
+### AI-powered workflow for product documentation, QA, release readiness, and GTM content generation.
 
 Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → Support Notes → GTM Content → GTM PPT
 """
