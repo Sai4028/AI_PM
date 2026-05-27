@@ -422,11 +422,21 @@ template_options = (
     saved_templates
 )
 
+default_template = load_default_template()
+
+default_index = 0
+
+if default_template in template_options:
+
+    default_index = template_options.index(
+        default_template
+    )
+
 selected_template = st.selectbox(
     "Select Template",
-    template_options
+    template_options,
+    index=default_index
 )
-
 # LOAD TEMPLATE
 
 if selected_template in DEFAULT_FSD_TEMPLATES:
