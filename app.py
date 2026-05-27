@@ -477,7 +477,15 @@ if st.button("Save Template"):
         st.success(
             "Template Saved Successfully"
         )
+if st.button("Set Selected Template As Default"):
 
+    save_default_template(
+        selected_template
+    )
+
+    st.success(
+        f"{selected_template} set as default"
+    )
 # -----------------------------------
 # EXISTING BUTTON
 # -----------------------------------
