@@ -645,30 +645,15 @@ if analyze:
 
             final_context = final_context[:12000]
 
-            prompt = f"""
-You are an ERP Product Management AI Assistant.
-
+prompt = f"""
 Enterprise Repository Context:
 {final_context}
 
 Requirement:
 {requirement}
 
-Generate structured enterprise-grade FSD.
-
-Return:
-
-1. Objective
-2. Scope
-3. Functional Requirements
-4. Workflow
-5. Business Rules
-6. Required Validations
-7. Dependencies
-8. Risks
-9. Acceptance Criteria
-10. Impacted Modules
-11. Regression Areas
+Instructions:
+{editable_prompt}
 """
 
             api_key = st.secrets["GEMINI_API_KEY"]
