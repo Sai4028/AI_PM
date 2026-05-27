@@ -225,6 +225,37 @@ def get_user_templates():
             )
 
     return templates
+    # -----------------------------------
+# DEFAULT TEMPLATE SETTINGS
+# -----------------------------------
+
+os.makedirs("user_settings", exist_ok=True)
+
+SETTINGS_FILE = "user_settings/default_templates.json"
+
+
+def load_default_template():
+
+    if os.path.exists(SETTINGS_FILE):
+
+        with open(SETTINGS_FILE, "r") as f:
+
+            settings = json.load(f)
+
+            return settings.get("fsd_default")
+
+    return "Standard"
+
+
+def save_default_template(template_name):
+
+    settings = {
+        "fsd_default": template_name
+    }
+
+    with open(SETTINGS_FILE, "w") as f:
+
+        json.dump(settings, f)
 
 if "generated_fsd" not in st.session_state:
     st.session_state.generated_fsd = ""
