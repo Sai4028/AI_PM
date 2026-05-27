@@ -656,7 +656,7 @@ Instructions:
 {editable_prompt}
 """
 
-            api_key = st.secrets["GEMINI_API_KEY"]
+api_key = st.secrets["GEMINI_API_KEY"]
 
             url = (
                 "https://generativelanguage.googleapis.com/"
