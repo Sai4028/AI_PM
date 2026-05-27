@@ -169,10 +169,6 @@ embedding_model = SentenceTransformer(
 )
 
 # -----------------------------------
-# SESSION STATE
-# -----------------------------------
-
-# -----------------------------------
 # PROMPT TEMPLATE HELPERS
 # -----------------------------------
 
@@ -180,12 +176,15 @@ import json
 
 os.makedirs("prompt_templates/fsd", exist_ok=True)
 os.makedirs("user_templates/fsd", exist_ok=True)
+os.makedirs("user_settings", exist_ok=True)
 
 DEFAULT_FSD_TEMPLATES = {
     "Standard": "prompt_templates/fsd/standard.txt",
     "Detailed": "prompt_templates/fsd/detailed.txt",
     "Executive": "prompt_templates/fsd/executive.txt"
 }
+
+SETTINGS_FILE = "user_settings/default_templates.json"
 
 
 def load_prompt_template(file_path):
@@ -225,13 +224,6 @@ def get_user_templates():
             )
 
     return templates
-    # -----------------------------------
-# DEFAULT TEMPLATE SETTINGS
-# -----------------------------------
-
-os.makedirs("user_settings", exist_ok=True)
-
-SETTINGS_FILE = "user_settings/default_templates.json"
 
 
 def load_default_template():
@@ -257,6 +249,11 @@ def save_default_template(template_name):
 
         json.dump(settings, f)
 
+
+# -----------------------------------
+# SESSION STATE
+# -----------------------------------
+
 if "generated_fsd" not in st.session_state:
     st.session_state.generated_fsd = ""
 
@@ -265,8 +262,6 @@ if "approved_fsd" not in st.session_state:
 
 if "qa_generated" not in st.session_state:
     st.session_state.qa_generated = False
-
-
 
 # -----------------------------------
 # TITLE
@@ -378,6 +373,10 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # TAB 1
 # ===================================
 
+# ===================================
+# TAB 1
+# ===================================
+
 with tab1:
 
     with st.expander("View Repository Files"):
@@ -400,105 +399,122 @@ with tab1:
 
     st.subheader("Enter Requirement")
 
-requirement = st.text_area(
-    "Requirement",
-    height=200
-)
-
-# -----------------------------------
-# ADD NEW TEMPLATE CODE HERE
-# -----------------------------------
-
-st.subheader("FSD Template")
-
-default_templates = list(
-    DEFAULT_FSD_TEMPLATES.keys()
-)
-
-saved_templates = get_user_templates()
-
-template_options = (
-    default_templates +
-    saved_templates
-)
-
-default_template = load_default_template()
-
-default_index = 0
-
-if default_template in template_options:
-
-    default_index = template_options.index(
-        default_template
+    requirement = st.text_area(
+        "Requirement",
+        height=200
     )
 
-selected_template = st.selectbox(
-    "Select Template",
-    template_options,
-    index=default_index
-)
-# LOAD TEMPLATE
+    # -----------------------------------
+    # TEMPLATE SECTION
+    # -----------------------------------
 
-if selected_template in DEFAULT_FSD_TEMPLATES:
+    st.subheader("FSD Template")
 
-    template_content = load_prompt_template(
-        DEFAULT_FSD_TEMPLATES[selected_template]
+    default_templates = list(
+        DEFAULT_FSD_TEMPLATES.keys()
     )
 
-else:
+    saved_templates = get_user_templates()
 
-    template_content = load_prompt_template(
-        f"user_templates/fsd/{selected_template}.txt"
+    template_options = (
+        default_templates +
+        saved_templates
     )
 
-# EDITABLE INSTRUCTIONS
+    default_template = load_default_template()
 
-editable_prompt = st.text_area(
-    "AI Instructions",
-    value=template_content,
-    height=300
-)
+    default_index = 0
 
-# SAVE TEMPLATE
+    if default_template in template_options:
 
-new_template_name = st.text_input(
-    "Save As Template Name"
-)
+        default_index = template_options.index(
+            default_template
+        )
 
-if st.button("Save Template"):
+    selected_template = st.selectbox(
+        "Select Template",
+        template_options,
+        index=default_index
+    )
 
-    if new_template_name:
+    # -----------------------------------
+    # LOAD TEMPLATE
+    # -----------------------------------
 
-        save_user_template(
-            new_template_name,
-            editable_prompt
+    if selected_template in DEFAULT_FSD_TEMPLATES:
+
+        template_content = load_prompt_template(
+            DEFAULT_FSD_TEMPLATES[selected_template]
+        )
+
+    else:
+
+        template_content = load_prompt_template(
+            f"user_templates/fsd/{selected_template}.txt"
+        )
+
+    # -----------------------------------
+    # EDITABLE INSTRUCTIONS
+    # -----------------------------------
+
+    editable_prompt = st.text_area(
+        "AI Instructions",
+        value=template_content,
+        height=300
+    )
+
+    # -----------------------------------
+    # SAVE TEMPLATE
+    # -----------------------------------
+
+    new_template_name = st.text_input(
+        "Save As Template Name"
+    )
+
+    if st.button("Save Template"):
+
+        if new_template_name:
+
+            save_user_template(
+                new_template_name,
+                editable_prompt
+            )
+
+            st.success(
+                "Template Saved Successfully"
+            )
+
+    # -----------------------------------
+    # DEFAULT TEMPLATE
+    # -----------------------------------
+
+    if st.button("Set Selected Template As Default"):
+
+        save_default_template(
+            selected_template
         )
 
         st.success(
-            "Template Saved Successfully"
+            f"{selected_template} set as default"
         )
-if st.button("Set Selected Template As Default"):
 
-    save_default_template(
-        selected_template
-    )
+    # -----------------------------------
+    # GENERATE FSD
+    # -----------------------------------
 
-    st.success(
-        f"{selected_template} set as default"
-    )
-# -----------------------------------
-# EXISTING BUTTON
-# -----------------------------------
+    analyze = st.button("Generate FSD")
 
-analyze = st.button("Generate FSD")
-
-if analyze:
+    if analyze:
 
         if not requirement:
 
             st.error("Please enter requirement")
 
         else:
+
+            # -----------------------------------
+            # SAVE UPLOADED FILES
+            # -----------------------------------
 
             if uploaded_files:
 
@@ -510,6 +526,7 @@ if analyze:
                     )
 
                     with open(file_path, "wb") as f:
+
                         f.write(
                             uploaded_file.getbuffer()
                         )
@@ -522,6 +539,10 @@ if analyze:
 
             chunk_size = 800
             chunk_overlap = 100
+
+            # -----------------------------------
+            # READ REPOSITORY FILES
+            # -----------------------------------
 
             for file in repository_files:
 
@@ -579,6 +600,10 @@ if analyze:
                         f"Error processing {file}: {e}"
                     )
 
+            # -----------------------------------
+            # CREATE EMBEDDINGS
+            # -----------------------------------
+
             chunk_texts = [
 
                 chunk["text"]
@@ -601,6 +626,10 @@ if analyze:
             )
 
             index.add(embeddings)
+
+            # -----------------------------------
+            # SEARCH RELEVANT CONTEXT
+            # -----------------------------------
 
             query_embedding = embedding_model.encode(
                 [requirement]
@@ -645,7 +674,11 @@ if analyze:
 
             final_context = final_context[:12000]
 
-prompt = f"""
+            # -----------------------------------
+            # FINAL AI PROMPT
+            # -----------------------------------
+
+            prompt = f"""
 Enterprise Repository Context:
 {final_context}
 
@@ -656,7 +689,11 @@ Instructions:
 {editable_prompt}
 """
 
-api_key = st.secrets["GEMINI_API_KEY"]
+            # -----------------------------------
+            # GEMINI API
+            # -----------------------------------
+
+            api_key = st.secrets["GEMINI_API_KEY"]
 
             url = (
                 "https://generativelanguage.googleapis.com/"
@@ -708,8 +745,6 @@ api_key = st.secrets["GEMINI_API_KEY"]
                 )
 
                 st.write(response_json)
-
-if st.session_state.generated_fsd:
 
         st.subheader("PM Review & Edit")
 
