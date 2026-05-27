@@ -172,6 +172,60 @@ embedding_model = SentenceTransformer(
 # SESSION STATE
 # -----------------------------------
 
+# -----------------------------------
+# PROMPT TEMPLATE HELPERS
+# -----------------------------------
+
+import json
+
+os.makedirs("prompt_templates/fsd", exist_ok=True)
+os.makedirs("user_templates/fsd", exist_ok=True)
+
+DEFAULT_FSD_TEMPLATES = {
+    "Standard": "prompt_templates/fsd/standard.txt",
+    "Detailed": "prompt_templates/fsd/detailed.txt",
+    "Executive": "prompt_templates/fsd/executive.txt"
+}
+
+
+def load_prompt_template(file_path):
+
+    try:
+
+        with open(file_path, "r") as f:
+            return f.read()
+
+    except Exception as e:
+
+        st.error(f"Error loading template: {e}")
+
+        return ""
+
+
+def save_user_template(template_name, content):
+
+    file_path = f"user_templates/fsd/{template_name}.txt"
+
+    with open(file_path, "w") as f:
+        f.write(content)
+
+
+def get_user_templates():
+
+    templates = []
+
+    folder = "user_templates/fsd"
+
+    for file in os.listdir(folder):
+
+        if file.endswith(".txt"):
+
+            templates.append(
+                file.replace(".txt", "")
+            )
+
+    return templates
+
 if "generated_fsd" not in st.session_state:
     st.session_state.generated_fsd = ""
 
@@ -180,6 +234,8 @@ if "approved_fsd" not in st.session_state:
 
 if "qa_generated" not in st.session_state:
     st.session_state.qa_generated = False
+
+
 
 # -----------------------------------
 # TITLE
