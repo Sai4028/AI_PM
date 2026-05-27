@@ -779,6 +779,75 @@ Instructions:
                 )
 
                 st.write(response_json)
+        # -----------------------------------
+        # GENERATION HISTORY VIEWER
+        # -----------------------------------
+
+        st.subheader("Generation History")
+
+        history_files = []
+
+        if os.path.exists("generation_history"):
+
+            history_files = sorted(
+                os.listdir("generation_history"),
+                reverse=True
+            )
+
+        if history_files:
+
+            for history in history_files[:5]:
+
+                history_path = os.path.join(
+                    "generation_history",
+                    history
+                )
+
+                try:
+
+                    with open(history_path, "r") as f:
+
+                        history_data = json.load(f)
+
+                    with st.expander(
+                        f"{history_data['timestamp']} | {history_data['selected_template']}"
+                    ):
+
+                        st.write(
+                            f"Requirement: {history_data['requirement']}"
+                        )
+
+                        st.write(
+                            f"Template: {history_data['selected_template']}"
+                        )
+
+                        st.text_area(
+                            "Instructions",
+                            history_data["instructions"],
+                            height=150,
+                            disabled=True,
+                            key=f"instr_{history}"
+                        )
+
+                        st.text_area(
+                            "Generated Output",
+                            history_data["generated_output"],
+                            height=300,
+                            disabled=True,
+                            key=f"output_{history}"
+                        )
+
+                except Exception as e:
+
+                    st.error(
+                        f"Error loading history: {e}"
+                    )
+
+        else:
+
+            st.info(
+                "No generation history available"
+            )
 
         st.subheader("PM Review & Edit")
 
