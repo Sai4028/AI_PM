@@ -159,6 +159,7 @@ st.markdown(
 
 os.makedirs("repository", exist_ok=True)
 os.makedirs("generated_fsds", exist_ok=True)
+os.makedirs("generation_history", exist_ok=True)
 
 # -----------------------------------
 # EMBEDDING MODEL
