@@ -369,12 +369,79 @@ with tab1:
 
     st.subheader("Enter Requirement")
 
-    requirement = st.text_area(
-        "Requirement",
-        height=200
+requirement = st.text_area(
+    "Requirement",
+    height=200
+)
+
+# -----------------------------------
+# ADD NEW TEMPLATE CODE HERE
+# -----------------------------------
+
+st.subheader("FSD Template")
+
+default_templates = list(
+    DEFAULT_FSD_TEMPLATES.keys()
+)
+
+saved_templates = get_user_templates()
+
+template_options = (
+    default_templates +
+    saved_templates
+)
+
+selected_template = st.selectbox(
+    "Select Template",
+    template_options
+)
+
+# LOAD TEMPLATE
+
+if selected_template in DEFAULT_FSD_TEMPLATES:
+
+    template_content = load_prompt_template(
+        DEFAULT_FSD_TEMPLATES[selected_template]
     )
 
-    analyze = st.button("Generate FSD")
+else:
+
+    template_content = load_prompt_template(
+        f"user_templates/fsd/{selected_template}.txt"
+    )
+
+# EDITABLE INSTRUCTIONS
+
+editable_prompt = st.text_area(
+    "AI Instructions",
+    value=template_content,
+    height=300
+)
+
+# SAVE TEMPLATE
+
+new_template_name = st.text_input(
+    "Save As Template Name"
+)
+
+if st.button("Save Template"):
+
+    if new_template_name:
+
+        save_user_template(
+            new_template_name,
+            editable_prompt
+        )
+
+        st.success(
+            "Template Saved Successfully"
+        )
+
+# -----------------------------------
+# EXISTING BUTTON
+# -----------------------------------
+
+analyze = st.button("Generate FSD")
 
     if analyze:
 
