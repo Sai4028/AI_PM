@@ -727,6 +727,38 @@ Instructions:
                 ][0]["content"]["parts"][0]["text"]
 
                 st.session_state.generated_fsd = ai_output
+                # -----------------------------------
+# SAVE GENERATION HISTORY
+# -----------------------------------
+
+timestamp = datetime.now().strftime(
+    "%Y%m%d_%H%M%S"
+)
+
+history_data = {
+
+    "timestamp": timestamp,
+
+    "requirement": requirement,
+
+    "selected_template": selected_template,
+
+    "instructions": editable_prompt,
+
+    "generated_output": ai_output
+}
+
+history_file = (
+    f"generation_history/FSD_{timestamp}.json"
+)
+
+with open(history_file, "w") as f:
+
+    json.dump(
+        history_data,
+        f,
+        indent=4
+    )
 
                 st.subheader("Generated FSD")
 
