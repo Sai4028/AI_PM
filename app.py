@@ -748,7 +748,6 @@ Instructions:
                 
                     "generated_output": ai_output,
                 
-                    "evaluation": evaluation_output
                 }
                 
                 history_file = (
