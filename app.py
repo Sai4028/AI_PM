@@ -282,6 +282,43 @@ st.markdown(
 Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → Support Notes → GTM Content → GTM PPT
 """
 )
+
+st.subheader("Workflow Progress")
+
+progress_col1, progress_col2, progress_col3 = st.columns(3)
+
+with progress_col1:
+
+    if st.session_state.generated_fsd:
+
+        st.success("✅ FSD Generated")
+
+    else:
+
+        st.info("⚪ FSD Pending")
+
+with progress_col2:
+
+    if st.session_state.workflow_stage in [
+        "FSD_APPROVED",
+        "QA_GENERATED"
+    ]:
+
+        st.success("✅ FSD Approved")
+
+    else:
+
+        st.info("⚪ Approval Pending")
+
+with progress_col3:
+
+    if st.session_state.qa_generated:
+
+        st.success("✅ QA Generated")
+
+    else:
+
+        st.info("⚪ QA Pending")
 repository_files = os.listdir(
     "repository"
 )
