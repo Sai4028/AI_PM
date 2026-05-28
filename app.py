@@ -737,7 +737,7 @@ Instructions:
                 )
                 
                 history_data = {
-                
+
                     "timestamp": timestamp,
                 
                     "requirement": requirement,
@@ -746,7 +746,9 @@ Instructions:
                 
                     "instructions": editable_prompt,
                 
-                    "generated_output": ai_output
+                    "generated_output": ai_output,
+                
+                    "evaluation": evaluation_output
                 }
                 
                 history_file = (
@@ -903,6 +905,16 @@ Instructions:
                             disabled=True,
                             key=f"output_{history}"
                         )
+                        
+                        if "evaluation" in history_data:
+                        
+                            st.text_area(
+                                "AI Evaluation",
+                                history_data["evaluation"],
+                                height=200,
+                                disabled=True,
+                                key=f"eval_{history}"
+                            )
 
                 except Exception as e:
 
