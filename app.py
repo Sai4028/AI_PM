@@ -735,9 +735,16 @@ Instructions:
                 timestamp = datetime.now().strftime(
                     "%Y%m%d_%H%M%S"
                 )
+                existing_history = os.listdir(
+                    "generation_history"
+                )
+                
+                version_number = len(existing_history) + 1
                 
                 history_data = {
 
+                    "version": version_number,
+                    
                     "timestamp": timestamp,
                 
                     "requirement": requirement,
@@ -892,7 +899,7 @@ Instructions:
                         history_data = json.load(f)
 
                     with st.expander(
-                        f"{history_data['timestamp']} | {history_data['selected_template']}"
+                            f"Version {history_data['version']} | {history_data['selected_template']} | {history_data['timestamp']}"
                     ):
 
                         st.write(
