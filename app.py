@@ -1061,7 +1061,10 @@ with tab2:
     == "FSD_APPROVED"
     ):
 
-        if st.button("Generate QA Test Cases"):
+        if (
+                st.session_state.workflow_stage
+                == "FSD_APPROVED"
+        ):
 
             approved_fsd = st.session_state.approved_fsd
 
