@@ -285,66 +285,98 @@ Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → S
 
 st.subheader("Workflow Progress")
 
-progress_col1, progress_col2, progress_col3 = st.columns(3)
-
 # -----------------------------------
-# FSD STATUS
+# INITIAL STATE
 # -----------------------------------
 
-with progress_col1:
+if not st.session_state.generated_fsd:
 
-    if st.session_state.generated_fsd:
-
-        st.success("✅ FSD Generated")
-
-    else:
-
-        st.info("⚪ Waiting for Requirement")
+    st.info(
+        "⚪ Waiting for Requirement"
+    )
 
 # -----------------------------------
-# APPROVAL STATUS
+# FSD GENERATED
 # -----------------------------------
 
-with progress_col2:
+elif (
+    st.session_state.generated_fsd
+    and
+    st.session_state.workflow_stage
+    != "FSD_APPROVED"
+):
 
-    if (
-        st.session_state.workflow_stage
-        in [
-            "FSD_APPROVED",
-            "QA_GENERATED"
-        ]
-    ):
+    col1, col2 = st.columns(2)
 
-        st.success("✅ FSD Approved")
+    with col1:
 
-    elif st.session_state.generated_fsd:
+        st.success(
+            "✅ FSD Generated"
+        )
 
-        st.warning("⏳ Approval Pending")
+    with col2:
 
-    else:
-
-        st.info("⚪ Waiting for FSD")
+        st.warning(
+            "⏳ Approval Pending"
+        )
 
 # -----------------------------------
-# QA STATUS
+# QA RUNNING
 # -----------------------------------
 
-with progress_col3:
+elif (
+    st.session_state.workflow_stage
+    == "FSD_APPROVED"
+):
 
-    if st.session_state.qa_generated:
+    col1, col2, col3 = st.columns(3)
 
-        st.success("✅ QA Generated")
+    with col1:
 
-    elif (
-        st.session_state.workflow_stage
-        == "FSD_APPROVED"
-    ):
+        st.success(
+            "✅ FSD Generated"
+        )
 
-        st.warning("⏳ QA Running")
+    with col2:
 
-    else:
+        st.success(
+            "✅ FSD Approved"
+        )
 
-        st.info("⚪ Waiting for Approval")
+    with col3:
+
+        st.warning(
+            "⏳ QA Running"
+        )
+
+# -----------------------------------
+# QA COMPLETED
+# -----------------------------------
+
+elif (
+    st.session_state.workflow_stage
+    == "QA_GENERATED"
+):
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.success(
+            "✅ FSD Generated"
+        )
+
+    with col2:
+
+        st.success(
+            "✅ FSD Approved"
+        )
+
+    with col3:
+
+        st.success(
+            "✅ QA Generated"
+        )
 repository_files = os.listdir(
     "repository"
 )
