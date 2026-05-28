@@ -853,12 +853,13 @@ Instructions:
                             f,
                             indent=4
                         )
-                except:
+                except Exception as e:
 
                     st.warning(
-                        "Evaluation generation failed"
+                        f"Evaluation generation failed: {e}"
                     )
-
+    
+                    st.write(evaluation_json)
                 st.subheader(
                     "Reference Documents Used"
                 )
