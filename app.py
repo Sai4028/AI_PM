@@ -976,22 +976,22 @@ Instructions:
         st.subheader("PM Review & Edit")
 
         edited_fsd = st.text_area(
-            "Review / Edit Generated FSD",
-            value=st.session_state.generated_fsd,
-            height=500
-        )
+    "Review / Edit Generated FSD",
+    value=st.session_state.generated_fsd,
+    height=500
+)
 
-        if st.button("Approve FSD"):
+if st.button("Approve FSD"):
 
-            st.session_state.approved_fsd = edited_fsd
-        
-            st.session_state.workflow_stage = (
-                "FSD_APPROVED"
-            )
-        
-            st.success(
-                "FSD Approved Successfully"
-            )
+    st.session_state.approved_fsd = edited_fsd
+
+    st.session_state.workflow_stage = (
+        "FSD_APPROVED"
+    )
+
+    st.success(
+        "FSD Approved Successfully"
+    )
 
 if st.session_state.approved_fsd:
 
