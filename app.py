@@ -1059,13 +1059,9 @@ with tab2:
     if (
     st.session_state.workflow_stage
     == "FSD_APPROVED"
+    and
+    st.session_state.approved_fsd
     ):
-
-        if (
-                st.session_state.workflow_stage
-                == "FSD_APPROVED"
-        ):
-
             approved_fsd = st.session_state.approved_fsd
 
             test_case_prompt = f"""
