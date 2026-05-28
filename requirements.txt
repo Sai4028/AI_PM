@@ -8,3 +8,4 @@ python-docx
 torch
 transformers
 python-pptx
+pip install streamlit-mic-recorder
