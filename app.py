@@ -826,7 +826,21 @@ Instructions:
                     st.info(
                         evaluation_output
                     )
+                                        # -----------------------------------
+                    # UPDATE HISTORY WITH EVALUATION
+                    # -----------------------------------
 
+                    history_data["evaluation"] = (
+                        evaluation_output
+                    )
+
+                    with open(history_file, "w") as f:
+
+                        json.dump(
+                            history_data,
+                            f,
+                            indent=4
+                        )
                 except:
 
                     st.warning(
