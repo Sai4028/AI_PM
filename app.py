@@ -903,8 +903,23 @@ Instructions:
                         "Old"
                     )
                     
+                    score_display = "No Score"
+                    
+                    if "evaluation" in history_data:
+                    
+                        evaluation_text = history_data["evaluation"]
+                    
+                        match = re.search(
+                            r"Overall Score:\s*(.*)",
+                            evaluation_text
+                        )
+                    
+                        if match:
+                    
+                            score_display = match.group(1)
+                    
                     with st.expander(
-                        f"Version {version} | {history_data['selected_template']} | {history_data['timestamp']}"
+                        f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
                     ):
                         st.write(
                             f"Requirement: {history_data['requirement']}"
