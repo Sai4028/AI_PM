@@ -898,10 +898,14 @@ Instructions:
 
                         history_data = json.load(f)
 
+                    version = history_data.get(
+                        "version",
+                        "Old"
+                    )
+                    
                     with st.expander(
-                            f"Version {history_data['version']} | {history_data['selected_template']} | {history_data['timestamp']}"
+                        f"Version {version} | {history_data['selected_template']} | {history_data['timestamp']}"
                     ):
-
                         st.write(
                             f"Requirement: {history_data['requirement']}"
                         )
