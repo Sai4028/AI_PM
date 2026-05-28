@@ -263,6 +263,11 @@ if "approved_fsd" not in st.session_state:
 
 if "qa_generated" not in st.session_state:
     st.session_state.qa_generated = False
+if "workflow_stage" not in st.session_state:
+
+    st.session_state.workflow_stage = (
+        "FSD_GENERATED"
+    )
 
 # -----------------------------------
 # TITLE
