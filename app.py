@@ -5,7 +5,6 @@ import re
 import faiss
 import numpy as np
 import requests
-pip install streamlit-mic-recorder
 from datetime import datetime
 from streamlit_mic_recorder import speech_to_text
 from sentence_transformers import SentenceTransformer
