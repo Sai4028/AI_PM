@@ -765,6 +765,73 @@ Instructions:
 
                 st.write(ai_output)
 
+                # -----------------------------------
+                # AI QUALITY EVALUATION
+                # -----------------------------------
+
+                evaluation_prompt = f"""
+                You are an AI Product Documentation Reviewer.
+                
+                Evaluate the following FSD.
+                
+                FSD:
+                {ai_output}
+                
+                Score each category out of 10.
+                
+                Return ONLY in this format:
+                
+                Completeness: X/10
+                Business Clarity: X/10
+                Validation Coverage: X/10
+                Technical Depth: X/10
+                Risk Coverage: X/10
+                Overall Score: X/100
+                
+                Also provide:
+                1 short strength
+                1 short improvement suggestion
+                """
+
+                evaluation_payload = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {
+                                    "text": evaluation_prompt
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+                evaluation_response = requests.post(
+                    url,
+                    json=evaluation_payload
+                )
+
+                evaluation_json = evaluation_response.json()
+
+                try:
+
+                    evaluation_output = evaluation_json[
+                        "candidates"
+                    ][0]["content"]["parts"][0]["text"]
+
+                    st.subheader(
+                        "AI Quality Evaluation"
+                    )
+
+                    st.info(
+                        evaluation_output
+                    )
+
+                except:
+
+                    st.warning(
+                        "Evaluation generation failed"
+                    )
+
                 st.subheader(
                     "Reference Documents Used"
                 )
