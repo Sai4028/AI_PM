@@ -982,15 +982,15 @@ Instructions:
 
         if st.button("Approve FSD"):
 
-    st.session_state.approved_fsd = edited_fsd
-
-    st.session_state.workflow_stage = (
-        "FSD_APPROVED"
-    )
-
-    st.success(
-        "FSD Approved Successfully"
-    )
+            st.session_state.approved_fsd = edited_fsd
+        
+            st.session_state.workflow_stage = (
+                "FSD_APPROVED"
+            )
+        
+            st.success(
+                "FSD Approved Successfully"
+            )
 
         if st.session_state.approved_fsd:
 
@@ -1054,7 +1054,10 @@ with tab2:
         "QA Test Case Generation"
     )
 
-    if st.session_state.approved_fsd:
+    if (
+    st.session_state.workflow_stage
+    == "FSD_APPROVED"
+    ):
 
         if st.button("Generate QA Test Cases"):
 
@@ -1108,6 +1111,10 @@ Generate:
                 ][0]["content"]["parts"][0]["text"]
 
                 st.session_state.qa_generated = True
+
+                st.session_state.workflow_stage = (
+                    "QA_GENERATED"
+                )
 
                 st.success(
                     "QA Test Cases Generated Successfully"
