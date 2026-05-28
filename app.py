@@ -5,8 +5,9 @@ import re
 import faiss
 import numpy as np
 import requests
+pip install streamlit-mic-recorder
 from datetime import datetime
-
+from streamlit_mic_recorder import speech_to_text
 from sentence_transformers import SentenceTransformer
 from docx import Document
 from pptx import Presentation
@@ -500,12 +501,28 @@ with tab1:
     )
 
     st.subheader("Enter Requirement")
+    st.caption(
+            "🎤 Speak your requirement"
+        )
+        
+        voice_text = speech_to_text(
+            language='en',
+            use_container_width=True,
+            just_once=True,
+            key='voice_input'
+        )
 
-    requirement = st.text_area(
-        "Requirement",
-        height=200
-    )
-
+        default_requirement = ""
+        
+        if voice_text:
+        
+            default_requirement = voice_text
+        
+        requirement = st.text_area(
+            "Requirement",
+            value=default_requirement,
+            height=200
+        )
     # -----------------------------------
     # TEMPLATE SECTION
     # -----------------------------------
