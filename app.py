@@ -287,6 +287,10 @@ st.subheader("Workflow Progress")
 
 progress_col1, progress_col2, progress_col3 = st.columns(3)
 
+# -----------------------------------
+# FSD STATUS
+# -----------------------------------
+
 with progress_col1:
 
     if st.session_state.generated_fsd:
@@ -295,20 +299,35 @@ with progress_col1:
 
     else:
 
-        st.info("⚪ FSD Pending")
+        st.info("⚪ Waiting for Requirement")
+
+# -----------------------------------
+# APPROVAL STATUS
+# -----------------------------------
 
 with progress_col2:
 
-    if st.session_state.workflow_stage in [
-        "FSD_APPROVED",
-        "QA_GENERATED"
-    ]:
+    if (
+        st.session_state.workflow_stage
+        in [
+            "FSD_APPROVED",
+            "QA_GENERATED"
+        ]
+    ):
 
         st.success("✅ FSD Approved")
 
+    elif st.session_state.generated_fsd:
+
+        st.warning("⏳ Approval Pending")
+
     else:
 
-        st.info("⚪ Approval Pending")
+        st.info("⚪ Waiting for FSD")
+
+# -----------------------------------
+# QA STATUS
+# -----------------------------------
 
 with progress_col3:
 
@@ -316,9 +335,16 @@ with progress_col3:
 
         st.success("✅ QA Generated")
 
+    elif (
+        st.session_state.workflow_stage
+        == "FSD_APPROVED"
+    ):
+
+        st.warning("⏳ QA Running")
+
     else:
 
-        st.info("⚪ QA Pending")
+        st.info("⚪ Waiting for Approval")
 repository_files = os.listdir(
     "repository"
 )
