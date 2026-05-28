@@ -993,9 +993,9 @@ Instructions:
                 "FSD Approved Successfully"
             )
 
-        if st.session_state.approved_fsd:
+if st.session_state.approved_fsd:
 
-            approved_fsd = st.session_state.approved_fsd
+        approved_fsd = st.session_state.approved_fsd
 
             if st.button("Export Approved FSD"):
 
