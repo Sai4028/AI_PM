@@ -266,7 +266,7 @@ if "qa_generated" not in st.session_state:
 if "workflow_stage" not in st.session_state:
 
     st.session_state.workflow_stage = (
-        "FSD_GENERATED"
+        "NOT_STARTED"
     )
 
 # -----------------------------------
@@ -289,7 +289,10 @@ st.subheader("Workflow Progress")
 # INITIAL STATE
 # -----------------------------------
 
-if not st.session_state.generated_fsd:
+if (
+    st.session_state.workflow_stage
+    == "NOT_STARTED"
+):
 
     st.info(
         "⚪ Waiting for Requirement"
@@ -300,10 +303,8 @@ if not st.session_state.generated_fsd:
 # -----------------------------------
 
 elif (
-    st.session_state.generated_fsd
-    and
     st.session_state.workflow_stage
-    != "FSD_APPROVED"
+    == "FSD_GENERATED"
 ):
 
     col1, col2 = st.columns(2)
@@ -346,7 +347,7 @@ elif (
     with col3:
 
         st.warning(
-            "⏳ QA Running"
+            "⏳ Generating QA Test Cases..."
         )
 
 # -----------------------------------
@@ -813,10 +814,12 @@ Instructions:
                 ]
             }
 
-            response = requests.post(
-                url,
-                json=payload
-            )
+            with st.spinner("Generating FSD..."):
+
+                response = requests.post(
+                    url,
+                    json=payload
+                )
 
             response_json = response.json()
 
@@ -827,6 +830,10 @@ Instructions:
                 ][0]["content"]["parts"][0]["text"]
 
                 st.session_state.generated_fsd = ai_output
+
+                st.session_state.workflow_stage = (
+                    "FSD_GENERATED"
+                )
 
                 # -----------------------------------
                 # SAVE GENERATION HISTORY
@@ -1193,10 +1200,12 @@ Generate:
                 ]
             }
 
-            response = requests.post(
-                url,
-                json=payload
-            )
+            with st.spinner("Generating QA Test Cases..."):
+
+                response = requests.post(
+                    url,
+                    json=payload
+                )
 
             response_json = response.json()
 
