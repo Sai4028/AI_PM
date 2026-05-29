@@ -499,671 +499,671 @@ with tab1:
         accept_multiple_files=True
     )
 
-st.subheader("Enter Requirement")
-
-st.caption(
-    "🎤 Speak your requirement"
-)
-
-voice_text = speech_to_text(
-    language='en',
-    use_container_width=True,
-    just_once=True,
-    key='voice_input'
-)
-
-default_requirement = ""
-
-if voice_text:
-    default_requirement = voice_text
-
-requirement = st.text_area(
-    "Requirement",
-    value=default_requirement,
-    height=200
-)
-# -----------------------------------
-# TEMPLATE SECTION
-# -----------------------------------
-
-st.subheader("FSD Template")
-
-default_templates = list(
-    DEFAULT_FSD_TEMPLATES.keys()
-)
-
-saved_templates = get_user_templates()
-
-template_options = (
-    default_templates +
-    saved_templates
-)
-
-default_template = load_default_template()
-
-default_index = 0
-
-if default_template in template_options:
-
-    default_index = template_options.index(
-        default_template
+    st.subheader("Enter Requirement")
+    
+    st.caption(
+        "🎤 Speak your requirement"
     )
-
-selected_template = st.selectbox(
-    "Select Template",
-    template_options,
-    index=default_index
-)
-
-# -----------------------------------
-# LOAD TEMPLATE
-# -----------------------------------
-
-if selected_template in DEFAULT_FSD_TEMPLATES:
-
-    template_content = load_prompt_template(
-        DEFAULT_FSD_TEMPLATES[selected_template]
+    
+    voice_text = speech_to_text(
+        language='en',
+        use_container_width=True,
+        just_once=True,
+        key='voice_input'
     )
-
-else:
-
-    template_content = load_prompt_template(
-        f"user_templates/fsd/{selected_template}.txt"
+    
+    default_requirement = ""
+    
+    if voice_text:
+        default_requirement = voice_text
+    
+    requirement = st.text_area(
+        "Requirement",
+        value=default_requirement,
+        height=200
     )
-
-# -----------------------------------
-# EDITABLE INSTRUCTIONS
-# -----------------------------------
-
-editable_prompt = st.text_area(
-    "AI Instructions",
-    value=template_content,
-    height=300
-)
-
-# -----------------------------------
-# SAVE TEMPLATE
-# -----------------------------------
-
-new_template_name = st.text_input(
-    "Save As Template Name"
-)
-
-if st.button("Save Template"):
-
-    if new_template_name:
-
-        save_user_template(
-            new_template_name,
-            editable_prompt
-        )
-
-        st.success(
-            "Template Saved Successfully"
-        )
-
     # -----------------------------------
-    # DEFAULT TEMPLATE
+    # TEMPLATE SECTION
     # -----------------------------------
-
-    if st.button("Set Selected Template As Default"):
-
-        save_default_template(
-            selected_template
+    
+    st.subheader("FSD Template")
+    
+    default_templates = list(
+        DEFAULT_FSD_TEMPLATES.keys()
+    )
+    
+    saved_templates = get_user_templates()
+    
+    template_options = (
+        default_templates +
+        saved_templates
+    )
+    
+    default_template = load_default_template()
+    
+    default_index = 0
+    
+    if default_template in template_options:
+    
+        default_index = template_options.index(
+            default_template
         )
-
-        st.success(
-            f"{selected_template} set as default"
+    
+    selected_template = st.selectbox(
+        "Select Template",
+        template_options,
+        index=default_index
+    )
+    
+    # -----------------------------------
+    # LOAD TEMPLATE
+    # -----------------------------------
+    
+    if selected_template in DEFAULT_FSD_TEMPLATES:
+    
+        template_content = load_prompt_template(
+            DEFAULT_FSD_TEMPLATES[selected_template]
         )
-
+    
+    else:
+    
+        template_content = load_prompt_template(
+            f"user_templates/fsd/{selected_template}.txt"
+        )
+    
     # -----------------------------------
-    # GENERATE FSD
+    # EDITABLE INSTRUCTIONS
     # -----------------------------------
-
-    analyze = st.button("Generate FSD")
-
-    if analyze:
-
-        if not requirement:
-
-            st.error("Please enter requirement")
-
-        else:
-
-            # -----------------------------------
-            # SAVE UPLOADED FILES
-            # -----------------------------------
-
-            if uploaded_files:
-
-                for uploaded_file in uploaded_files:
-
+    
+    editable_prompt = st.text_area(
+        "AI Instructions",
+        value=template_content,
+        height=300
+    )
+    
+    # -----------------------------------
+    # SAVE TEMPLATE
+    # -----------------------------------
+    
+    new_template_name = st.text_input(
+        "Save As Template Name"
+    )
+    
+    if st.button("Save Template"):
+    
+        if new_template_name:
+    
+            save_user_template(
+                new_template_name,
+                editable_prompt
+            )
+    
+            st.success(
+                "Template Saved Successfully"
+            )
+    
+        # -----------------------------------
+        # DEFAULT TEMPLATE
+        # -----------------------------------
+    
+        if st.button("Set Selected Template As Default"):
+    
+            save_default_template(
+                selected_template
+            )
+    
+            st.success(
+                f"{selected_template} set as default"
+            )
+    
+        # -----------------------------------
+        # GENERATE FSD
+        # -----------------------------------
+    
+        analyze = st.button("Generate FSD")
+    
+        if analyze:
+    
+            if not requirement:
+    
+                st.error("Please enter requirement")
+    
+            else:
+    
+                # -----------------------------------
+                # SAVE UPLOADED FILES
+                # -----------------------------------
+    
+                if uploaded_files:
+    
+                    for uploaded_file in uploaded_files:
+    
+                        file_path = os.path.join(
+                            "repository",
+                            uploaded_file.name
+                        )
+    
+                        with open(file_path, "wb") as f:
+    
+                            f.write(
+                                uploaded_file.getbuffer()
+                            )
+    
+                repository_files = os.listdir(
+                    "repository"
+                )
+    
+                all_chunks = []
+    
+                chunk_size = 800
+                chunk_overlap = 100
+    
+                # -----------------------------------
+                # READ REPOSITORY FILES
+                # -----------------------------------
+    
+                for file in repository_files:
+    
                     file_path = os.path.join(
                         "repository",
-                        uploaded_file.name
+                        file
                     )
-
-                    with open(file_path, "wb") as f:
-
-                        f.write(
-                            uploaded_file.getbuffer()
+    
+                    text = ""
+    
+                    try:
+    
+                        if file.endswith(".pdf"):
+    
+                            doc = fitz.open(file_path)
+    
+                            for page in doc:
+                                text += page.get_text()
+    
+                        elif file.endswith(".docx"):
+    
+                            doc = Document(file_path)
+    
+                            for para in doc.paragraphs:
+                                text += para.text + " "
+    
+                        clean_text = re.sub(
+                            r'\s+',
+                            ' ',
+                            text
                         )
-
-            repository_files = os.listdir(
-                "repository"
-            )
-
-            all_chunks = []
-
-            chunk_size = 800
-            chunk_overlap = 100
-
-            # -----------------------------------
-            # READ REPOSITORY FILES
-            # -----------------------------------
-
-            for file in repository_files:
-
-                file_path = os.path.join(
-                    "repository",
-                    file
-                )
-
-                text = ""
-
-                try:
-
-                    if file.endswith(".pdf"):
-
-                        doc = fitz.open(file_path)
-
-                        for page in doc:
-                            text += page.get_text()
-
-                    elif file.endswith(".docx"):
-
-                        doc = Document(file_path)
-
-                        for para in doc.paragraphs:
-                            text += para.text + " "
-
-                    clean_text = re.sub(
-                        r'\s+',
-                        ' ',
-                        text
-                    )
-
-                    start = 0
-
-                    while start < len(clean_text):
-
-                        end = start + chunk_size
-
-                        chunk = clean_text[start:end]
-
-                        all_chunks.append({
-
-                            "source": file,
-
-                            "text": chunk
-                        })
-
-                        start += (
-                            chunk_size - chunk_overlap
+    
+                        start = 0
+    
+                        while start < len(clean_text):
+    
+                            end = start + chunk_size
+    
+                            chunk = clean_text[start:end]
+    
+                            all_chunks.append({
+    
+                                "source": file,
+    
+                                "text": chunk
+                            })
+    
+                            start += (
+                                chunk_size - chunk_overlap
+                            )
+    
+                    except Exception as e:
+    
+                        st.error(
+                            f"Error processing {file}: {e}"
                         )
-
-                except Exception as e:
-
-                    st.error(
-                        f"Error processing {file}: {e}"
-                    )
-
-            # -----------------------------------
-            # CREATE EMBEDDINGS
-            # -----------------------------------
-
-            chunk_texts = [
-
-                chunk["text"]
-
-                for chunk in all_chunks
-            ]
-
-            embeddings = embedding_model.encode(
-                chunk_texts
-            )
-
-            embeddings = np.array(
-                embeddings
-            ).astype("float32")
-
-            dimension = embeddings.shape[1]
-
-            index = faiss.IndexFlatL2(
-                dimension
-            )
-
-            index.add(embeddings)
-
-            # -----------------------------------
-            # SEARCH RELEVANT CONTEXT
-            # -----------------------------------
-
-            query_embedding = embedding_model.encode(
-                [requirement]
-            )
-
-            query_embedding = np.array(
-                query_embedding
-            ).astype("float32")
-
-            distances, indices = index.search(
-                query_embedding,
-                5
-            )
-
-            final_context = ""
-
-            reference_files = set()
-
-            st.subheader(
-                "Relevant Repository Matches"
-            )
-
-            for idx in indices[0]:
-
-                match = all_chunks[idx]
-
-                reference_files.add(
-                    match["source"]
-                )
-
-                final_context += (
-                    f"\nSource: {match['source']}\n"
-                )
-
-                final_context += (
-                    match["text"] + "\n"
-                )
-
-                st.markdown("---")
-
-                st.write(match["text"])
-
-            final_context = final_context[:12000]
-
-            # -----------------------------------
-            # FINAL AI PROMPT
-            # -----------------------------------
-
-            prompt = f"""
-Enterprise Repository Context:
-{final_context}
-
-Requirement:
-{requirement}
-
-Instructions:
-{editable_prompt}
-"""
-
-            # -----------------------------------
-            # GEMINI API
-            # -----------------------------------
-
-            api_key = st.secrets["GEMINI_API_KEY"]
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
-            )
-
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": prompt
-                            }
-                        ]
-                    }
+    
+                # -----------------------------------
+                # CREATE EMBEDDINGS
+                # -----------------------------------
+    
+                chunk_texts = [
+    
+                    chunk["text"]
+    
+                    for chunk in all_chunks
                 ]
-            }
-
-            with st.spinner("Generating FSD..."):
-
-                response = requests.post(
-                    url,
-                    json=payload
+    
+                embeddings = embedding_model.encode(
+                    chunk_texts
                 )
-
-            response_json = response.json()
-
-            try:
-
-                ai_output = response_json[
-                    "candidates"
-                ][0]["content"]["parts"][0]["text"]
-
-                st.session_state.generated_fsd = ai_output
-
-                st.session_state.workflow_stage = (
-                    "FSD_GENERATED"
+    
+                embeddings = np.array(
+                    embeddings
+                ).astype("float32")
+    
+                dimension = embeddings.shape[1]
+    
+                index = faiss.IndexFlatL2(
+                    dimension
                 )
-
+    
+                index.add(embeddings)
+    
                 # -----------------------------------
-                # SAVE GENERATION HISTORY
+                # SEARCH RELEVANT CONTEXT
                 # -----------------------------------
-                
-                timestamp = datetime.now().strftime(
-                    "%Y%m%d_%H%M%S"
+    
+                query_embedding = embedding_model.encode(
+                    [requirement]
                 )
-                existing_history = os.listdir(
-                    "generation_history"
+    
+                query_embedding = np.array(
+                    query_embedding
+                ).astype("float32")
+    
+                distances, indices = index.search(
+                    query_embedding,
+                    5
                 )
-                
-                version_number = len(existing_history) + 1
-                
-                history_data = {
-
-                    "version": version_number,
-                    
-                    "timestamp": timestamp,
-                
-                    "requirement": requirement,
-                
-                    "selected_template": selected_template,
-                
-                    "instructions": editable_prompt,
-                
-                    "generated_output": ai_output,
-                
-                }
-                
-                history_file = (
-                    f"generation_history/FSD_{timestamp}.json"
+    
+                final_context = ""
+    
+                reference_files = set()
+    
+                st.subheader(
+                    "Relevant Repository Matches"
                 )
-                
-                with open(history_file, "w") as f:
-                
-                    json.dump(
-                        history_data,
-                        f,
-                        indent=4
+    
+                for idx in indices[0]:
+    
+                    match = all_chunks[idx]
+    
+                    reference_files.add(
+                        match["source"]
                     )
-
-                st.subheader("Generated FSD")
-
-                st.write(ai_output)
-
+    
+                    final_context += (
+                        f"\nSource: {match['source']}\n"
+                    )
+    
+                    final_context += (
+                        match["text"] + "\n"
+                    )
+    
+                    st.markdown("---")
+    
+                    st.write(match["text"])
+    
+                final_context = final_context[:12000]
+    
                 # -----------------------------------
-                # AI QUALITY EVALUATION
+                # FINAL AI PROMPT
                 # -----------------------------------
-
-                evaluation_prompt = f"""
-                You are an AI Product Documentation Reviewer.
-                
-                Evaluate the following FSD.
-                
-                FSD:
-                {ai_output}
-                
-                Score each category out of 10.
-                
-                Return ONLY in this format:
-                
-                Completeness: X/10
-                Business Clarity: X/10
-                Validation Coverage: X/10
-                Technical Depth: X/10
-                Risk Coverage: X/10
-                Overall Score: X/100
-                
-                Also provide:
-                1 short strength
-                1 short improvement suggestion
-                """
-
-                evaluation_payload = {
+    
+                prompt = f"""
+    Enterprise Repository Context:
+    {final_context}
+    
+    Requirement:
+    {requirement}
+    
+    Instructions:
+    {editable_prompt}
+    """
+    
+                # -----------------------------------
+                # GEMINI API
+                # -----------------------------------
+    
+                api_key = st.secrets["GEMINI_API_KEY"]
+    
+                url = (
+                    "https://generativelanguage.googleapis.com/"
+                    f"v1/models/gemini-2.5-flash:generateContent?key={api_key}"
+                )
+    
+                payload = {
                     "contents": [
                         {
                             "parts": [
                                 {
-                                    "text": evaluation_prompt
+                                    "text": prompt
                                 }
                             ]
                         }
                     ]
                 }
-
-                evaluation_response = requests.post(
-                    url,
-                    json=evaluation_payload
-                )
-
-                evaluation_json = evaluation_response.json()
-
+    
+                with st.spinner("Generating FSD..."):
+    
+                    response = requests.post(
+                        url,
+                        json=payload
+                    )
+    
+                response_json = response.json()
+    
                 try:
-
-                    evaluation_output = evaluation_json[
+    
+                    ai_output = response_json[
                         "candidates"
                     ][0]["content"]["parts"][0]["text"]
-
-                    st.subheader(
-                        "AI Quality Evaluation"
+    
+                    st.session_state.generated_fsd = ai_output
+    
+                    st.session_state.workflow_stage = (
+                        "FSD_GENERATED"
                     )
-
-                    st.info(
-                        evaluation_output
-                    )
-                                        # -----------------------------------
-                    # UPDATE HISTORY WITH EVALUATION
+    
                     # -----------------------------------
-
-                    history_data["evaluation"] = (
-                        evaluation_output
+                    # SAVE GENERATION HISTORY
+                    # -----------------------------------
+                    
+                    timestamp = datetime.now().strftime(
+                        "%Y%m%d_%H%M%S"
                     )
-
+                    existing_history = os.listdir(
+                        "generation_history"
+                    )
+                    
+                    version_number = len(existing_history) + 1
+                    
+                    history_data = {
+    
+                        "version": version_number,
+                        
+                        "timestamp": timestamp,
+                    
+                        "requirement": requirement,
+                    
+                        "selected_template": selected_template,
+                    
+                        "instructions": editable_prompt,
+                    
+                        "generated_output": ai_output,
+                    
+                    }
+                    
+                    history_file = (
+                        f"generation_history/FSD_{timestamp}.json"
+                    )
+                    
                     with open(history_file, "w") as f:
-
+                    
                         json.dump(
                             history_data,
                             f,
                             indent=4
                         )
-                except Exception as e:
-
-                    st.warning(
-                        f"Evaluation generation failed: {e}"
+    
+                    st.subheader("Generated FSD")
+    
+                    st.write(ai_output)
+    
+                    # -----------------------------------
+                    # AI QUALITY EVALUATION
+                    # -----------------------------------
+    
+                    evaluation_prompt = f"""
+                    You are an AI Product Documentation Reviewer.
+                    
+                    Evaluate the following FSD.
+                    
+                    FSD:
+                    {ai_output}
+                    
+                    Score each category out of 10.
+                    
+                    Return ONLY in this format:
+                    
+                    Completeness: X/10
+                    Business Clarity: X/10
+                    Validation Coverage: X/10
+                    Technical Depth: X/10
+                    Risk Coverage: X/10
+                    Overall Score: X/100
+                    
+                    Also provide:
+                    1 short strength
+                    1 short improvement suggestion
+                    """
+    
+                    evaluation_payload = {
+                        "contents": [
+                            {
+                                "parts": [
+                                    {
+                                        "text": evaluation_prompt
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+    
+                    evaluation_response = requests.post(
+                        url,
+                        json=evaluation_payload
                     )
     
-                    st.write(evaluation_json)
-                st.subheader(
-                    "Reference Documents Used"
-                )
-
-                for ref in reference_files:
-                    st.write(f"- {ref}")
-
-            except:
-
-                st.error(
-                    "AI generation failed"
-                )
-
-                st.write(response_json)
-    # -----------------------------------
-    # GENERATION HISTORY VIEWER
-    # -----------------------------------
-
-    st.subheader("Generation History")
-
-    history_files = []
-
-    if os.path.exists("generation_history"):
-
-        history_files = sorted(
-            os.listdir("generation_history"),
-            reverse=True
-        )
-
-    if history_files:
-
-        for history in history_files[:5]:
-
-            history_path = os.path.join(
-                "generation_history",
-                history
+                    evaluation_json = evaluation_response.json()
+    
+                    try:
+    
+                        evaluation_output = evaluation_json[
+                            "candidates"
+                        ][0]["content"]["parts"][0]["text"]
+    
+                        st.subheader(
+                            "AI Quality Evaluation"
+                        )
+    
+                        st.info(
+                            evaluation_output
+                        )
+                                            # -----------------------------------
+                        # UPDATE HISTORY WITH EVALUATION
+                        # -----------------------------------
+    
+                        history_data["evaluation"] = (
+                            evaluation_output
+                        )
+    
+                        with open(history_file, "w") as f:
+    
+                            json.dump(
+                                history_data,
+                                f,
+                                indent=4
+                            )
+                    except Exception as e:
+    
+                        st.warning(
+                            f"Evaluation generation failed: {e}"
+                        )
+        
+                        st.write(evaluation_json)
+                    st.subheader(
+                        "Reference Documents Used"
+                    )
+    
+                    for ref in reference_files:
+                        st.write(f"- {ref}")
+    
+                except:
+    
+                    st.error(
+                        "AI generation failed"
+                    )
+    
+                    st.write(response_json)
+        # -----------------------------------
+        # GENERATION HISTORY VIEWER
+        # -----------------------------------
+    
+        st.subheader("Generation History")
+    
+        history_files = []
+    
+        if os.path.exists("generation_history"):
+    
+            history_files = sorted(
+                os.listdir("generation_history"),
+                reverse=True
             )
-
-            try:
-
-                with open(history_path, "r") as f:
-
-                    history_data = json.load(f)
-
-                version = history_data.get(
-                    "version",
-                    "Old"
+    
+        if history_files:
+    
+            for history in history_files[:5]:
+    
+                history_path = os.path.join(
+                    "generation_history",
+                    history
                 )
-                
-                score_display = "No Score"
-                
-                if "evaluation" in history_data:
-                
-                    evaluation_text = history_data["evaluation"]
-                
-                    match = re.search(
-                        r"Overall Score:\s*(.*)",
-                        evaluation_text
+    
+                try:
+    
+                    with open(history_path, "r") as f:
+    
+                        history_data = json.load(f)
+    
+                    version = history_data.get(
+                        "version",
+                        "Old"
                     )
-                
-                    if match:
-                
-                        score_display = match.group(1)
-                
-                with st.expander(
-                    f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
-                ):
-                    st.write(
-                        f"Requirement: {history_data['requirement']}"
-                    )
-
-                    st.write(
-                        f"Template: {history_data['selected_template']}"
-                    )
-
-                    st.text_area(
-                        "Instructions",
-                        history_data["instructions"],
-                        height=150,
-                        disabled=True,
-                        key=f"instr_{history}"
-                    )
-
-                    st.text_area(
-                        "Generated Output",
-                        history_data["generated_output"],
-                        height=300,
-                        disabled=True,
-                        key=f"output_{history}"
-                    )
+                    
+                    score_display = "No Score"
                     
                     if "evaluation" in history_data:
                     
-                        st.text_area(
-                            "AI Evaluation",
-                            history_data["evaluation"],
-                            height=200,
-                            disabled=True,
-                            key=f"eval_{history}"
+                        evaluation_text = history_data["evaluation"]
+                    
+                        match = re.search(
+                            r"Overall Score:\s*(.*)",
+                            evaluation_text
                         )
-
-            except Exception as e:
-
-                st.error(
-                    f"Error loading history: {e}"
+                    
+                        if match:
+                    
+                            score_display = match.group(1)
+                    
+                    with st.expander(
+                        f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
+                    ):
+                        st.write(
+                            f"Requirement: {history_data['requirement']}"
+                        )
+    
+                        st.write(
+                            f"Template: {history_data['selected_template']}"
+                        )
+    
+                        st.text_area(
+                            "Instructions",
+                            history_data["instructions"],
+                            height=150,
+                            disabled=True,
+                            key=f"instr_{history}"
+                        )
+    
+                        st.text_area(
+                            "Generated Output",
+                            history_data["generated_output"],
+                            height=300,
+                            disabled=True,
+                            key=f"output_{history}"
+                        )
+                        
+                        if "evaluation" in history_data:
+                        
+                            st.text_area(
+                                "AI Evaluation",
+                                history_data["evaluation"],
+                                height=200,
+                                disabled=True,
+                                key=f"eval_{history}"
+                            )
+    
+                except Exception as e:
+    
+                    st.error(
+                        f"Error loading history: {e}"
+                    )
+    
+        else:
+    
+            st.info(
+                "No generation history available"
+            )
+    
+        if st.session_state.generated_fsd:
+    
+            st.subheader("PM Review & Edit")
+        
+            edited_fsd = st.text_area(
+                "Review / Edit Generated FSD",
+                value=st.session_state.generated_fsd,
+                height=500
+            )
+        
+            if st.button("Approve FSD"):
+        
+                st.session_state.approved_fsd = edited_fsd
+        
+                st.session_state.workflow_stage = (
+                    "FSD_APPROVED"
                 )
-
-    else:
-
-        st.info(
-            "No generation history available"
-        )
-
-    if st.session_state.generated_fsd:
-
-        st.subheader("PM Review & Edit")
-    
-        edited_fsd = st.text_area(
-            "Review / Edit Generated FSD",
-            value=st.session_state.generated_fsd,
-            height=500
-        )
-    
-        if st.button("Approve FSD"):
-    
-            st.session_state.approved_fsd = edited_fsd
-    
-            st.session_state.workflow_stage = (
-                "FSD_APPROVED"
-            )
-    
-            st.success(
-                "FSD Approved Successfully"
-            )
-    
-    if st.session_state.approved_fsd:
-    
-        approved_fsd = st.session_state.approved_fsd
-    
-        if st.button("Export Approved FSD"):
-    
-            doc = Document()
-    
-            doc.add_heading(
-                "Functional Specification Document",
-                level=1
-            )
-    
-            current_date = datetime.now().strftime(
-                "%d-%m-%Y %H:%M"
-            )
-    
-            doc.add_paragraph(
-                f"Generated On: {current_date}"
-            )
-    
-            doc.add_paragraph(
-                "Generated By: AI PM Assistant"
-            )
-    
-            doc.add_paragraph(
-                approved_fsd
-            )
-    
-            timestamp = datetime.now().strftime(
-                "%Y%m%d_%H%M%S"
-            )
-    
-            file_name = (
-                f"generated_fsds/FSD_{timestamp}.docx"
-            )
-    
-            doc.save(file_name)
-    
-            st.success(
-                "FSD Exported Successfully"
-            )
-    
-            with open(file_name, "rb") as file:
-    
-                st.download_button(
-                    label="Download FSD",
-                    data=file,
-                    file_name=f"FSD_{timestamp}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        
+                st.success(
+                    "FSD Approved Successfully"
                 )
+        
+        if st.session_state.approved_fsd:
+        
+            approved_fsd = st.session_state.approved_fsd
+        
+            if st.button("Export Approved FSD"):
+        
+                doc = Document()
+        
+                doc.add_heading(
+                    "Functional Specification Document",
+                    level=1
+                )
+        
+                current_date = datetime.now().strftime(
+                    "%d-%m-%Y %H:%M"
+                )
+        
+                doc.add_paragraph(
+                    f"Generated On: {current_date}"
+                )
+        
+                doc.add_paragraph(
+                    "Generated By: AI PM Assistant"
+                )
+        
+                doc.add_paragraph(
+                    approved_fsd
+                )
+        
+                timestamp = datetime.now().strftime(
+                    "%Y%m%d_%H%M%S"
+                )
+        
+                file_name = (
+                    f"generated_fsds/FSD_{timestamp}.docx"
+                )
+        
+                doc.save(file_name)
+        
+                st.success(
+                    "FSD Exported Successfully"
+                )
+        
+                with open(file_name, "rb") as file:
+        
+                    st.download_button(
+                        label="Download FSD",
+                        data=file,
+                        file_name=f"FSD_{timestamp}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
 # ===================================
 # TAB 2
 # ===================================
