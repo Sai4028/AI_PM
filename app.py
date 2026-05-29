@@ -984,11 +984,11 @@ with tab1:
                     )
     
                     st.write(response_json)
-        # -----------------------------------
-        # GENERATION HISTORY VIEWER
-        # -----------------------------------
-    
-        st.subheader("Generation History")
+    # -----------------------------------
+    # GENERATION HISTORY VIEWER
+    # -----------------------------------
+
+    st.subheader("Generation History")
     
         history_files = []
     
