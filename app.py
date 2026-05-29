@@ -948,7 +948,7 @@ with tab1:
                         st.info(
                             evaluation_output
                         )
-                                            # -----------------------------------
+                        # -----------------------------------
                         # UPDATE HISTORY WITH EVALUATION
                         # -----------------------------------
     
@@ -984,104 +984,103 @@ with tab1:
                     )
     
                     st.write(response_json)
-    # -----------------------------------
-    # GENERATION HISTORY VIEWER
-    # -----------------------------------
+# -----------------------------------
+# GENERATION HISTORY VIEWER
+# -----------------------------------
 
-    st.subheader("Generation History")
-    
-        history_files = []
-    
-        if os.path.exists("generation_history"):
-    
-            history_files = sorted(
-                os.listdir("generation_history"),
-                reverse=True
+st.subheader("Generation History")
+
+history_files = []
+
+if os.path.exists("generation_history"):
+
+    history_files = sorted(
+        os.listdir("generation_history"),
+        reverse=True
+    )
+
+if history_files:
+
+    for history in history_files[:5]:
+
+        history_path = os.path.join(
+            "generation_history",
+            history
+        )
+
+        try:
+
+            with open(history_path, "r") as f:
+                history_data = json.load(f)
+
+            version = history_data.get(
+                "version",
+                "Old"
             )
-    
-        if history_files:
-    
-            for history in history_files[:5]:
-    
-                history_path = os.path.join(
-                    "generation_history",
-                    history
+
+            score_display = "No Score"
+
+            if "evaluation" in history_data:
+
+                evaluation_text = history_data["evaluation"]
+
+                match = re.search(
+                    r"Overall Score:\s*(.*)",
+                    evaluation_text
                 )
-    
-                try:
-    
-                    with open(history_path, "r") as f:
-    
-                        history_data = json.load(f)
-    
-                    version = history_data.get(
-                        "version",
-                        "Old"
+
+                if match:
+                    score_display = match.group(1)
+
+            with st.expander(
+                f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
+            ):
+
+                st.write(
+                    f"Requirement: {history_data['requirement']}"
+                )
+
+                st.write(
+                    f"Template: {history_data['selected_template']}"
+                )
+
+                st.text_area(
+                    "Instructions",
+                    history_data["instructions"],
+                    height=150,
+                    disabled=True,
+                    key=f"instr_{history}"
+                )
+
+                st.text_area(
+                    "Generated Output",
+                    history_data["generated_output"],
+                    height=300,
+                    disabled=True,
+                    key=f"output_{history}"
+                )
+
+                if "evaluation" in history_data:
+
+                    st.text_area(
+                        "AI Evaluation",
+                        history_data["evaluation"],
+                        height=200,
+                        disabled=True,
+                        key=f"eval_{history}"
                     )
-                    
-                    score_display = "No Score"
-                    
-                    if "evaluation" in history_data:
-                    
-                        evaluation_text = history_data["evaluation"]
-                    
-                        match = re.search(
-                            r"Overall Score:\s*(.*)",
-                            evaluation_text
-                        )
-                    
-                        if match:
-                    
-                            score_display = match.group(1)
-                    
-                    with st.expander(
-                        f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
-                    ):
-                        st.write(
-                            f"Requirement: {history_data['requirement']}"
-                        )
-    
-                        st.write(
-                            f"Template: {history_data['selected_template']}"
-                        )
-    
-                        st.text_area(
-                            "Instructions",
-                            history_data["instructions"],
-                            height=150,
-                            disabled=True,
-                            key=f"instr_{history}"
-                        )
-    
-                        st.text_area(
-                            "Generated Output",
-                            history_data["generated_output"],
-                            height=300,
-                            disabled=True,
-                            key=f"output_{history}"
-                        )
-                        
-                        if "evaluation" in history_data:
-                        
-                            st.text_area(
-                                "AI Evaluation",
-                                history_data["evaluation"],
-                                height=200,
-                                disabled=True,
-                                key=f"eval_{history}"
-                            )
-    
-                except Exception as e:
-    
-                    st.error(
-                        f"Error loading history: {e}"
-                    )
-    
-        else:
-    
-            st.info(
-                "No generation history available"
+
+        except Exception as e:
+
+            st.error(
+                f"Error loading history: {e}"
             )
+
+else:
+
+    st.info(
+        "No generation history available"
+    )
     
         if st.session_state.generated_fsd:
     
