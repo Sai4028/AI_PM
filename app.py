@@ -505,21 +505,22 @@ with tab1:
         "🎤 Speak your requirement"
     )
     
+if "requirement_text" not in st.session_state:
+    st.session_state.requirement_text = ""
+
     voice_text = speech_to_text(
-        language='en',
+        language="en",
         use_container_width=True,
         just_once=True,
-        key='voice_input'
+        key="voice_input"
     )
     
-    default_requirement = ""
-    
     if voice_text:
-        default_requirement = voice_text
+        st.session_state.requirement_text = voice_text
     
     requirement = st.text_area(
         "Requirement",
-        value=default_requirement,
+        key="requirement_text",
         height=200
     )
     # -----------------------------------
