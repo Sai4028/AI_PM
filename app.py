@@ -588,35 +588,33 @@ with tab1:
     new_template_name = st.text_input(
         "Save As Template Name"
     )
-            
-        if st.button("Save Template"):
-        
-            if new_template_name:
-        
-                save_user_template(
-                    new_template_name,
-                    editable_prompt
-                )
-        
-                st.success(
-                    "Template Saved Successfully"
-                )
-        
-        
-        if st.button("Set Selected Template As Default"):
-        
-            save_default_template(
-                selected_template
+
+    if st.button("Save Template"):
+
+        if new_template_name:
+
+            save_user_template(
+                new_template_name,
+                editable_prompt
             )
-        
+
             st.success(
-                f"{selected_template} set as default"
+                "Template Saved Successfully"
             )
-        
-        
-        analyze = st.button("Generate FSD")
-        
-        if analyze:
+
+    if st.button("Set Selected Template As Default"):
+
+        save_default_template(
+            selected_template
+        )
+
+        st.success(
+            f"{selected_template} set as default"
+        )
+
+    analyze = st.button("Generate FSD")
+
+    if analyze:
     
             if not requirement:
     
