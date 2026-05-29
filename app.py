@@ -505,9 +505,9 @@ with tab1:
         "🎤 Speak your requirement"
     )
     
-if "requirement_text" not in st.session_state:
-    st.session_state.requirement_text = ""
-
+    if "requirement_text" not in st.session_state:
+        st.session_state.requirement_text = ""
+    
     voice_text = speech_to_text(
         language="en",
         use_container_width=True,
