@@ -1082,7 +1082,7 @@ else:
         "No generation history available"
     )
     
-        if st.session_state.generated_fsd:
+    if st.session_state.generated_fsd:
     
             st.subheader("PM Review & Edit")
         
