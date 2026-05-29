@@ -522,11 +522,11 @@ requirement = st.text_area(
     value=default_requirement,
     height=200
 )
-    # -----------------------------------
-    # TEMPLATE SECTION
-    # -----------------------------------
+# -----------------------------------
+# TEMPLATE SECTION
+# -----------------------------------
 
-    st.subheader("FSD Template")
+st.subheader("FSD Template")
 
     default_templates = list(
         DEFAULT_FSD_TEMPLATES.keys()
