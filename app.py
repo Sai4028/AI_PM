@@ -984,177 +984,177 @@ with tab1:
                     )
     
                     st.write(response_json)
-# -----------------------------------
-# GENERATION HISTORY VIEWER
-# -----------------------------------
-
-st.subheader("Generation History")
-
-history_files = []
-
-if os.path.exists("generation_history"):
-
-    history_files = sorted(
-        os.listdir("generation_history"),
-        reverse=True
-    )
-
-if history_files:
-
-    for history in history_files[:5]:
-
-        history_path = os.path.join(
-            "generation_history",
-            history
+    # -----------------------------------
+    # GENERATION HISTORY VIEWER
+    # -----------------------------------
+    
+    st.subheader("Generation History")
+    
+    history_files = []
+    
+    if os.path.exists("generation_history"):
+    
+        history_files = sorted(
+            os.listdir("generation_history"),
+            reverse=True
         )
-
-        try:
-
-            with open(history_path, "r") as f:
-                history_data = json.load(f)
-
-            version = history_data.get(
-                "version",
-                "Old"
+    
+    if history_files:
+    
+        for history in history_files[:5]:
+    
+            history_path = os.path.join(
+                "generation_history",
+                history
             )
-
-            score_display = "No Score"
-
-            if "evaluation" in history_data:
-
-                evaluation_text = history_data["evaluation"]
-
-                match = re.search(
-                    r"Overall Score:\s*(.*)",
-                    evaluation_text
+    
+            try:
+    
+                with open(history_path, "r") as f:
+                    history_data = json.load(f)
+    
+                version = history_data.get(
+                    "version",
+                    "Old"
                 )
-
-                if match:
-                    score_display = match.group(1)
-
-            with st.expander(
-                f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
-            ):
-
-                st.write(
-                    f"Requirement: {history_data['requirement']}"
-                )
-
-                st.write(
-                    f"Template: {history_data['selected_template']}"
-                )
-
-                st.text_area(
-                    "Instructions",
-                    history_data["instructions"],
-                    height=150,
-                    disabled=True,
-                    key=f"instr_{history}"
-                )
-
-                st.text_area(
-                    "Generated Output",
-                    history_data["generated_output"],
-                    height=300,
-                    disabled=True,
-                    key=f"output_{history}"
-                )
-
+    
+                score_display = "No Score"
+    
                 if "evaluation" in history_data:
-
+    
+                    evaluation_text = history_data["evaluation"]
+    
+                    match = re.search(
+                        r"Overall Score:\s*(.*)",
+                        evaluation_text
+                    )
+    
+                    if match:
+                        score_display = match.group(1)
+    
+                with st.expander(
+                    f"Version {version} | {history_data['selected_template']} | Score: {score_display}"
+                ):
+    
+                    st.write(
+                        f"Requirement: {history_data['requirement']}"
+                    )
+    
+                    st.write(
+                        f"Template: {history_data['selected_template']}"
+                    )
+    
                     st.text_area(
-                        "AI Evaluation",
-                        history_data["evaluation"],
-                        height=200,
+                        "Instructions",
+                        history_data["instructions"],
+                        height=150,
                         disabled=True,
-                        key=f"eval_{history}"
+                        key=f"instr_{history}"
                     )
-
-        except Exception as e:
-
-            st.error(
-                f"Error loading history: {e}"
-            )
-
-else:
-
-    st.info(
-        "No generation history available"
-    )
     
-    if st.session_state.generated_fsd:
-    
-            st.subheader("PM Review & Edit")
-        
-            edited_fsd = st.text_area(
-                "Review / Edit Generated FSD",
-                value=st.session_state.generated_fsd,
-                height=500
-            )
-        
-            if st.button("Approve FSD"):
-        
-                st.session_state.approved_fsd = edited_fsd
-        
-                st.session_state.workflow_stage = (
-                    "FSD_APPROVED"
-                )
-        
-                st.success(
-                    "FSD Approved Successfully"
-                )
-        
-    if st.session_state.approved_fsd:
-        
-            approved_fsd = st.session_state.approved_fsd
-        
-            if st.button("Export Approved FSD"):
-        
-                doc = Document()
-        
-                doc.add_heading(
-                    "Functional Specification Document",
-                    level=1
-                )
-        
-                current_date = datetime.now().strftime(
-                    "%d-%m-%Y %H:%M"
-                )
-        
-                doc.add_paragraph(
-                    f"Generated On: {current_date}"
-                )
-        
-                doc.add_paragraph(
-                    "Generated By: AI PM Assistant"
-                )
-        
-                doc.add_paragraph(
-                    approved_fsd
-                )
-        
-                timestamp = datetime.now().strftime(
-                    "%Y%m%d_%H%M%S"
-                )
-        
-                file_name = (
-                    f"generated_fsds/FSD_{timestamp}.docx"
-                )
-        
-                doc.save(file_name)
-        
-                st.success(
-                    "FSD Exported Successfully"
-                )
-        
-                with open(file_name, "rb") as file:
-        
-                    st.download_button(
-                        label="Download FSD",
-                        data=file,
-                        file_name=f"FSD_{timestamp}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    st.text_area(
+                        "Generated Output",
+                        history_data["generated_output"],
+                        height=300,
+                        disabled=True,
+                        key=f"output_{history}"
                     )
+    
+                    if "evaluation" in history_data:
+    
+                        st.text_area(
+                            "AI Evaluation",
+                            history_data["evaluation"],
+                            height=200,
+                            disabled=True,
+                            key=f"eval_{history}"
+                        )
+    
+            except Exception as e:
+    
+                st.error(
+                    f"Error loading history: {e}"
+                )
+    
+    else:
+    
+        st.info(
+            "No generation history available"
+        )
+        
+        if st.session_state.generated_fsd:
+        
+                st.subheader("PM Review & Edit")
+            
+                edited_fsd = st.text_area(
+                    "Review / Edit Generated FSD",
+                    value=st.session_state.generated_fsd,
+                    height=500
+                )
+            
+                if st.button("Approve FSD"):
+            
+                    st.session_state.approved_fsd = edited_fsd
+            
+                    st.session_state.workflow_stage = (
+                        "FSD_APPROVED"
+                    )
+            
+                    st.success(
+                        "FSD Approved Successfully"
+                    )
+            
+        if st.session_state.approved_fsd:
+            
+                approved_fsd = st.session_state.approved_fsd
+            
+                if st.button("Export Approved FSD"):
+            
+                    doc = Document()
+            
+                    doc.add_heading(
+                        "Functional Specification Document",
+                        level=1
+                    )
+            
+                    current_date = datetime.now().strftime(
+                        "%d-%m-%Y %H:%M"
+                    )
+            
+                    doc.add_paragraph(
+                        f"Generated On: {current_date}"
+                    )
+            
+                    doc.add_paragraph(
+                        "Generated By: AI PM Assistant"
+                    )
+            
+                    doc.add_paragraph(
+                        approved_fsd
+                    )
+            
+                    timestamp = datetime.now().strftime(
+                        "%Y%m%d_%H%M%S"
+                    )
+            
+                    file_name = (
+                        f"generated_fsds/FSD_{timestamp}.docx"
+                    )
+            
+                    doc.save(file_name)
+            
+                    st.success(
+                        "FSD Exported Successfully"
+                    )
+            
+                    with open(file_name, "rb") as file:
+            
+                        st.download_button(
+                            label="Download FSD",
+                            data=file,
+                            file_name=f"FSD_{timestamp}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        )
 # ===================================
 # TAB 2
 # ===================================
