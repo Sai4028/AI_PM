@@ -499,29 +499,29 @@ with tab1:
         accept_multiple_files=True
     )
 
-    st.subheader("Enter Requirement")
-    st.caption(
-            "🎤 Speak your requirement"
-        )
-        
-        voice_text = speech_to_text(
-            language='en',
-            use_container_width=True,
-            just_once=True,
-            key='voice_input'
-        )
+st.subheader("Enter Requirement")
 
-        default_requirement = ""
-        
-        if voice_text:
-        
-            default_requirement = voice_text
-        
-        requirement = st.text_area(
-            "Requirement",
-            value=default_requirement,
-            height=200
-        )
+st.caption(
+    "🎤 Speak your requirement"
+)
+
+voice_text = speech_to_text(
+    language='en',
+    use_container_width=True,
+    just_once=True,
+    key='voice_input'
+)
+
+default_requirement = ""
+
+if voice_text:
+    default_requirement = voice_text
+
+requirement = st.text_area(
+    "Requirement",
+    value=default_requirement,
+    height=200
+)
     # -----------------------------------
     # TEMPLATE SECTION
     # -----------------------------------
