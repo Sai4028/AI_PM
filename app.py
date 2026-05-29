@@ -528,79 +528,79 @@ requirement = st.text_area(
 
 st.subheader("FSD Template")
 
-    default_templates = list(
-        DEFAULT_FSD_TEMPLATES.keys()
+default_templates = list(
+    DEFAULT_FSD_TEMPLATES.keys()
+)
+
+saved_templates = get_user_templates()
+
+template_options = (
+    default_templates +
+    saved_templates
+)
+
+default_template = load_default_template()
+
+default_index = 0
+
+if default_template in template_options:
+
+    default_index = template_options.index(
+        default_template
     )
 
-    saved_templates = get_user_templates()
+selected_template = st.selectbox(
+    "Select Template",
+    template_options,
+    index=default_index
+)
 
-    template_options = (
-        default_templates +
-        saved_templates
+# -----------------------------------
+# LOAD TEMPLATE
+# -----------------------------------
+
+if selected_template in DEFAULT_FSD_TEMPLATES:
+
+    template_content = load_prompt_template(
+        DEFAULT_FSD_TEMPLATES[selected_template]
     )
 
-    default_template = load_default_template()
+else:
 
-    default_index = 0
+    template_content = load_prompt_template(
+        f"user_templates/fsd/{selected_template}.txt"
+    )
 
-    if default_template in template_options:
+# -----------------------------------
+# EDITABLE INSTRUCTIONS
+# -----------------------------------
 
-        default_index = template_options.index(
-            default_template
+editable_prompt = st.text_area(
+    "AI Instructions",
+    value=template_content,
+    height=300
+)
+
+# -----------------------------------
+# SAVE TEMPLATE
+# -----------------------------------
+
+new_template_name = st.text_input(
+    "Save As Template Name"
+)
+
+if st.button("Save Template"):
+
+    if new_template_name:
+
+        save_user_template(
+            new_template_name,
+            editable_prompt
         )
 
-    selected_template = st.selectbox(
-        "Select Template",
-        template_options,
-        index=default_index
-    )
-
-    # -----------------------------------
-    # LOAD TEMPLATE
-    # -----------------------------------
-
-    if selected_template in DEFAULT_FSD_TEMPLATES:
-
-        template_content = load_prompt_template(
-            DEFAULT_FSD_TEMPLATES[selected_template]
+        st.success(
+            "Template Saved Successfully"
         )
-
-    else:
-
-        template_content = load_prompt_template(
-            f"user_templates/fsd/{selected_template}.txt"
-        )
-
-    # -----------------------------------
-    # EDITABLE INSTRUCTIONS
-    # -----------------------------------
-
-    editable_prompt = st.text_area(
-        "AI Instructions",
-        value=template_content,
-        height=300
-    )
-
-    # -----------------------------------
-    # SAVE TEMPLATE
-    # -----------------------------------
-
-    new_template_name = st.text_input(
-        "Save As Template Name"
-    )
-
-    if st.button("Save Template"):
-
-        if new_template_name:
-
-            save_user_template(
-                new_template_name,
-                editable_prompt
-            )
-
-            st.success(
-                "Template Saved Successfully"
-            )
 
     # -----------------------------------
     # DEFAULT TEMPLATE
