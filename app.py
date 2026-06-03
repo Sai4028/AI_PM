@@ -282,102 +282,6 @@ st.markdown(
 Requirement → AI Draft → PM Review → QA Test Cases → Release Notes → Support Notes → GTM Content → GTM PPT
 """
 )
-
-st.subheader("Workflow Progress")
-
-# -----------------------------------
-# INITIAL STATE
-# -----------------------------------
-
-if (
-    st.session_state.workflow_stage
-    == "NOT_STARTED"
-):
-
-    st.info(
-        "⚪ Waiting for Requirement"
-    )
-
-# -----------------------------------
-# FSD GENERATED
-# -----------------------------------
-
-elif (
-    st.session_state.workflow_stage
-    == "FSD_GENERATED"
-):
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        st.success(
-            "✅ FSD Generated"
-        )
-
-    with col2:
-
-        st.warning(
-            "⏳ Approval Pending"
-        )
-
-# -----------------------------------
-# QA RUNNING
-# -----------------------------------
-
-elif (
-    st.session_state.workflow_stage
-    == "FSD_APPROVED"
-):
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-
-        st.success(
-            "✅ FSD Generated"
-        )
-
-    with col2:
-
-        st.success(
-            "✅ FSD Approved"
-        )
-
-    with col3:
-
-        st.warning(
-            "⏳ Generating QA Test Cases..."
-        )
-
-# -----------------------------------
-# QA COMPLETED
-# -----------------------------------
-
-elif (
-    st.session_state.workflow_stage
-    == "QA_GENERATED"
-):
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-
-        st.success(
-            "✅ FSD Generated"
-        )
-
-    with col2:
-
-        st.success(
-            "✅ FSD Approved"
-        )
-
-    with col3:
-
-        st.success(
-            "✅ QA Generated"
-        )
 repository_files = os.listdir(
     "repository"
 )
@@ -840,9 +744,6 @@ with tab1:
     
                     st.session_state.generated_fsd = ai_output
     
-                    st.session_state.workflow_stage = (
-                        "FSD_GENERATED"
-                    )
     
                     # -----------------------------------
                     # SAVE GENERATION HISTORY
@@ -1100,9 +1001,6 @@ with tab1:
     
             st.session_state.approved_fsd = edited_fsd
     
-            st.session_state.workflow_stage = (
-                "FSD_APPROVED"
-            )
     
             st.success(
                 "FSD Approved Successfully"
@@ -1169,12 +1067,7 @@ with tab2:
         "QA Test Case Generation"
     )
 
-    if (
-    st.session_state.workflow_stage
-    == "FSD_APPROVED"
-    and
-    st.session_state.approved_fsd
-    ):
+    if st.button("Generate QA Test Cases"):
             approved_fsd = st.session_state.approved_fsd
 
             test_case_prompt = f"""
@@ -1228,10 +1121,7 @@ Generate:
 
                 st.session_state.qa_generated = True
 
-                st.session_state.workflow_stage = (
-                    "QA_GENERATED"
-                )
-
+            
                 st.success(
                     "QA Test Cases Generated Successfully"
                 )
@@ -1288,12 +1178,11 @@ Generate:
                     "QA generation failed"
                 )
 
-    else:
+    if not st.session_state.approved_fsd:
 
-        st.warning(
-            "Approve FSD before generating QA Test Cases"
-        )
-
+    st.warning(
+        "Please approve FSD before generating QA Test Cases"
+    )
 # ===================================
 # TAB 3
 # ===================================
