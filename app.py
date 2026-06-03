@@ -662,11 +662,7 @@ with tab1:
                 final_context = ""
     
                 reference_files = set()
-    
-                st.subheader(
-                    "Relevant Repository Matches"
-                )
-    
+        
                 for idx in indices[0]:
     
                     match = all_chunks[idx]
@@ -683,9 +679,6 @@ with tab1:
                         match["text"] + "\n"
                     )
     
-                    st.markdown("---")
-    
-                    st.write(match["text"])
     
                 final_context = final_context[:12000]
     
