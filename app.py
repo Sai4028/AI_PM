@@ -1180,9 +1180,9 @@ Generate:
 
     if not st.session_state.approved_fsd:
 
-    st.warning(
-        "Please approve FSD before generating QA Test Cases"
-    )
+        st.warning(
+            "Please approve FSD before generating QA Test Cases"
+        )
 # ===================================
 # TAB 3
 # ===================================
