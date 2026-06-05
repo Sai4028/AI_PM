@@ -705,7 +705,7 @@ with tab1:
     
                 url = (
                     "https://generativelanguage.googleapis.com/"
-                    f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                    f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
                 )
     
                 payload = {
@@ -1082,7 +1082,7 @@ Generate:
 
             url = (
                 "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
             )
 
             payload = {
@@ -1209,7 +1209,7 @@ Return:
 
             url = (
                 "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
             )
 
             payload = {
@@ -1330,7 +1330,7 @@ Return:
 
             url = (
                 "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
             )
 
             payload = {
@@ -1455,7 +1455,7 @@ Return:
 
             url = (
                 "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
             )
 
             payload = {
@@ -1583,7 +1583,7 @@ Slide 8: Conclusion
 
             url = (
                 "https://generativelanguage.googleapis.com/"
-                f"v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+                f"v1/models/gemini-1.5-flash:generateContent?key={api_key}"
             )
 
             payload = {
